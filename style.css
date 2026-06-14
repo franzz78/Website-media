@@ -8,9 +8,6 @@
 body {
     background-color: #121212;
     color: #ffffff;
-    background-image: linear-gradient(rgba(18, 18, 18, 0.95), rgba(18, 18, 18, 0.95));
-    background-size: cover;
-    background-attachment: fixed;
 }
 
 /* Header & Navbar */
@@ -26,7 +23,6 @@ header {
     z-index: 1000;
 }
 
-/* Bungkus Struktur Susunan Logo Tiga Tingkat */
 .logo-wrapper {
     display: flex;
     flex-direction: column;
@@ -34,7 +30,6 @@ header {
     line-height: 1.2;
 }
 
-/* Baris Atas: Tulisan Tebal Putih */
 .logo-main {
     font-weight: 800;
     font-size: 18px;
@@ -43,7 +38,6 @@ header {
     text-transform: uppercase;
 }
 
-/* Baris Tengah: Nama Sub-Media */
 .logo-sub {
     font-weight: 600;
     font-size: 13px;
@@ -56,7 +50,6 @@ header {
     color: #e53935;
 }
 
-/* Baris Bawah: Pengelola */
 .logo-managed {
     font-size: 10px;
     color: #777777;
@@ -96,52 +89,43 @@ header {
 .news-title { padding: 0 15px 10px 15px; font-size: 22px; font-weight: bold; line-height: 1.4; color: #fff; }
 .news-content { padding: 0 15px 20px 15px; color: #ccc; line-height: 1.6; font-size: 15px; white-space: pre-line; }
 
-/* Lencana/Tag Khusus Identitas Penulis */
+/* Badges */
 .badge { padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
 .badge-dispenad { background-color: #1b5e20; color: #fff; border: 1px solid #4caf50; }
 .badge-owner { background-color: #b71c1c; color: #fff; border: 1px solid #ff1744; }
 .badge-admin { background-color: #333; color: #fff; border: 1px solid #555; }
 
-/* Form Login & CMS */
+/* Form Box */
 .box { background: #1a1a1a; max-width: 500px; margin: 30px auto; padding: 25px; border-radius: 8px; border: 1px solid #333; }
 .box h2 { border-bottom: 2px solid #e53935; padding-bottom: 10px; margin-bottom: 20px; font-size: 20px; }
 .box label { display: block; margin-bottom: 6px; font-size: 14px; color: #ccc; font-weight: 600; }
 .box input, .box textarea, .box button, .box select { width: 100%; padding: 12px; margin-bottom: 15px; background: #222; border: 1px solid #404040; color: #fff; border-radius: 4px; }
 .box input:focus, .box textarea:focus, .box select:focus { border-color: #e53935; outline: none; }
-.box button { background: #e53935; font-weight: bold; cursor: pointer; border: none; transition: background 0.2s; }
+.box button { background: #e53935; font-weight: bold; cursor: pointer; border: none; }
 .box button:hover { background: #b71c1c; }
 .box .logout-btn { background: #444; margin-top: 5px; }
-.box .logout-btn:hover { background: #333; }
 .hidden { display: none !important; }
 
-/* Tabel Monitor Admin */
-table th, table td { padding: 6px; border-bottom: 1px solid #222; vertical-align: middle; }
+/* Table */
+table { width: 100%; border-collapse: collapse; }
+table th, table td { padding: 6px; border-bottom: 1px solid #222; }
 
-/* Tombol Hubungkan Sosial Media Discord */
+/* Discord Button */
 .discord-section { text-align: center; margin: 30px 0; }
 .discord-btn {
     background-color: #5865F2; color: white !important;
     padding: 12px 25px; font-weight: bold; text-decoration: none;
     border-radius: 5px; display: inline-flex; align-items: center; gap: 10px;
-    font-size: 16px; border: none; transition: background 0.3s;
 }
-.discord-btn:hover { background-color: #4752c4; }
 
-/* Footer Credits & Owner Info */
 footer {
-    background-color: #141414; text-align: center;
-    padding: 25px 15px; margin-top: 50px;
+    background-color: #141414; text-align: center; padding: 25px 15px; margin-top: 50px;
     border-top: 1px solid #222; font-size: 13px; color: #777; line-height: 1.8;
 }
-footer strong { color: #fff; }
 .owner-tag { color: #e53935; font-weight: bold; }
 
-/* Screen Blocker Khusus Geofence */
 #geoBlocker {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background-color: #050505; color: #ffffff; z-index: 99999;
-    display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #050505;
+    color: #ffffff; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center;
 }
-#geoBlocker h1 { color: #e53935; margin-bottom: 15px; font-size: 26px; }
-#geoBlocker p { max-width: 500px; line-height: 1.6; font-size: 15px; color: #ccc; }
-
+#geoBlocker h1 { color: #e53935; margin-bottom: 15px; }
