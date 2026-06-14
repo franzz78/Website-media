@@ -771,11 +771,6 @@ function openOwnerSubSection(subSectionId) {
     }
 }
 
-// Tombol Pintas Mengubah Sakelar Status Lockdown Langsung Dari Menu Owner
-function toggleMaintenanceViaButton() {
-    setMaintenanceMode(!globalMaintenanceState);
-}
-
 // Tempelkan logika listener ini di dalam blok penanganan sinkronisasi Firebase kamu
 // Mendengarkan status lockdown secara Realtime
 database.ref('maintenance_mode').on('value', (snapshot) => {
@@ -820,3 +815,15 @@ snapshot.forEach((child) => {
         </div>`;
 });
 */
+
+// FUNGSI 1: MEMBUKA AKSES WEBSITE (NORMAL)
+function executeLockdownOpen() {
+    setMaintenanceMode(false); 
+    alert("Sistem Diperbarui: Akses website resmi kini dibuka untuk publik.");
+}
+
+// FUNGSI 2: MENUTUP AKSES WEBSITE (LOCKDOWN MALFUNGSI/PERBAIKAN)
+function executeLockdownClose() {
+    setMaintenanceMode(true);
+    alert("Sistem Diperbarui: Akses ditutup. Layar penguncian darurat aktif.");
+}
