@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
 </head>
-<body id="webBody">
+<body id="webBody" onload="initWebsiteDirectly()">
 
     <div id="musicPlayerContainer" style="display: none;"></div>
 
@@ -24,11 +24,6 @@
                 <button onclick="bypassMaintenanceMode()">Buka Akses Master</button>
             </div>
         </div>
-    </div>
-
-    <div id="geoBlocker">
-        <h1>MEMERIKSA LOKASI ANDA...</h1>
-        <p>Aplikasi Media Raya memerlukan izin lokasi aktif guna memverifikasi wilayah jangkauan operasional jaringan.</p>
     </div>
 
     <div id="appContainer" class="hidden">
