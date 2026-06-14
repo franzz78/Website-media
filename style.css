@@ -491,4 +491,190 @@ footer {
     0% { opacity: 0.6; }
     100% { opacity: 1; }
                              }
-    
+
+/* Tambahkan kode CSS ini ke dalam file style.css lamamu tanpa menghapus yang lain */
+
+/* =========================================================================
+   STYLE BANNER NOTIFIKASI BAWAH (PERSIS SPERTI CONTOH GAMBAR LINTARAYA)
+   ========================================================================= */
+.notification-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #11141a;
+    border-top: 2px solid #e53935;
+    padding: 12px 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 99999;
+    box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.6);
+    transition: transform 0.4s ease;
+}
+
+.notification-banner.slide-down {
+    transform: translateY(100%);
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bell-icon {
+    font-size: 18px;
+    animation: shakeBell 2s infinite;
+}
+
+.notification-content p {
+    color: #cbd5e1;
+    font-size: 13.5px;
+    margin: 0;
+}
+
+.notification-content strong {
+    color: #fff;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.notification-actions button {
+    width: auto;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 4px;
+    margin-bottom: 0;
+    text-transform: none;
+}
+
+.btn-noti-active {
+    background: #e53935;
+    color: #fff;
+}
+.btn-noti-active:hover {
+    background: #ff1744;
+}
+
+.btn-noti-later {
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.btn-noti-later:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+@keyframes shakeBell {
+    0%, 100% { transform: rotate(0); }
+    10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
+    20%, 40%, 60%, 80% { transform: rotate(10deg); }
+}
+
+/* =========================================================================
+   EXCLUSIVE ACCESS: ANIMASI RAINBOW TEXT
+   ========================================================================= */
+.rainbow-text {
+    background: linear-gradient(to right, #ff2a2a, #ff7a00, #ffea00, #05ff00, #00f5ff, #003cff, #9900ff, #ff2a2a);
+    background-size: 200% auto;
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: rainbowShift 3s linear infinite;
+    font-weight: 900 !important;
+    text-shadow: 0 0 10px rgba(102, 252, 241, 0.2);
+}
+
+@keyframes rainbowShift {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+
+/* =========================================================================
+   STYLE MENU GALERI DARI MASA KE MASA 
+   ========================================================================= */
+.gallery-main-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 2px;
+    margin-bottom: 35px;
+    line-height: 1.4;
+}
+.gallery-main-title span {
+    color: #66fcf1;
+    font-size: 16px;
+    background: rgba(102, 252, 241, 0.05);
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 1px solid rgba(102, 252, 241, 0.1);
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.gallery-item {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+.gallery-item:hover {
+    transform: translateY(-4px);
+    border-color: rgba(102,252,241,0.3);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+.gallery-img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.gallery-caption {
+    padding: 12px;
+    font-size: 12px;
+    color: #cbd5e1;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* =========================================================================
+   STYLE UTILITY HALAMAN SEJARAH
+   ========================================================================= */
+.sejarah-title {
+    font-size: 26px;
+    font-weight: 900;
+    color: #66fcf1;
+    text-align: center;
+    letter-spacing: 3px;
+}
+.sejarah-subtitle {
+    font-size: 13px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-align: center;
+    letter-spacing: 1px;
+    margin-top: 5px;
+}
+.sejarah-content {
+    color: #cbd5e1;
+    font-size: 14.5px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    padding: 10px 5px;
+    text-align: justify;
+}
