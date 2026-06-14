@@ -11,6 +11,21 @@
 
     <div id="musicPlayerContainer" style="display: none;"></div>
 
+    <div id="maintenanceBlocker" class="hidden">
+        <div class="maintenance-box">
+            <div class="maintenance-icon">⛔</div>
+            <h1>SERVER WEBSITE MAINTENANCE 100% ⛔</h1>
+            <p>Maaf, website saat ini sedang dalam perbaikan massal dan pembaruan sistem oleh Management AFI.</p>
+            <p style="color: #888; font-size: 13px;">Seluruh akses publik, kontributor, dan divisi dinas dialihkan sementara.</p>
+            
+            <div class="owner-bypass-area">
+                <label>Akses Khusus Bypass Owner Raya</label>
+                <input type="password" id="maintenanceBypassPass" placeholder="Masukkan Password Owner...">
+                <button onclick="bypassMaintenanceMode()">Buka Akses Master</button>
+            </div>
+        </div>
+    </div>
+
     <div id="geoBlocker">
         <h1>MEMERIKSA LOKASI ANDA...</h1>
         <p>Aplikasi Media Raya memerlukan izin lokasi aktif guna memverifikasi wilayah jangkauan operasional jaringan.</p>
@@ -111,6 +126,15 @@
                 <div id="ownerControls" class="hidden" style="margin-bottom: 20px; padding: 15px; border: 2px solid #b71c1c; border-radius: 6px; background-color: #1f1414;">
                     <p style="font-size: 13px; color: #ff1744; margin-bottom: 12px; font-weight: bold;">⚡ OWNER MASTER SYSTEM CONFIGURATION ACTIVE (@nathanael_0918)</p>
                     
+                    <div style="margin-bottom: 15px; background: #3e2723; padding: 12px; border-radius: 4px; border: 1px solid #d84315; text-align: center;">
+                        <span style="font-size: 12px; font-weight: bold; color: #ffab40; display: block; margin-bottom: 8px;">🚨 GLOBAL WEBSITE LOCKDOWN SYSTEM</span>
+                        <div style="display: flex; justify-content: center; gap: 10px;">
+                            <button id="maintenanceOnBtn" onclick="setMaintenanceMode(true)" style="background-color: #b71c1c; font-size: 12px; width: auto; margin:0; padding: 8px 15px;">AKTIFKAN MAINTENANCE ⛔</button>
+                            <button id="maintenanceOffBtn" onclick="setMaintenanceMode(false)" style="background-color: #2e7d32; font-size: 12px; width: auto; margin:0; padding: 8px 15px;">MATIKAN MAINTENANCE (NORMAL)</button>
+                        </div>
+                        <div id="maintenanceStatusLabel" style="font-size: 11px; font-weight: bold; color: #fff; margin-top: 8px;">Status: Memuat data...</div>
+                    </div>
+
                     <div style="margin-bottom: 15px; background: #1a237e; padding: 12px; border-radius: 4px; border: 1px solid #3f51b5;">
                         <span style="font-size: 12px; font-weight: bold; color: #00e5ff; display: block; margin-bottom: 8px;">📩 NOTIFIKASI PERSETUJUAN MEMBER KOMENTAR</span>
                         <div style="max-height: 150px; overflow-y: auto; font-size: 12px;">
