@@ -632,3 +632,126 @@ function clearAllNews() {
 }
 
 window.onload = initWebsiteDirectly;
+
+// Tambahkan Variabel Status Rainbow Global di paling atas script.js
+let isRainbowActive = false;
+
+// 1. Tambahkan pemanggilan listener galeri & sejarah ke fungsi inisialisasi awal
+function initWebsiteDirectly() {
+    listenToMaintenanceMode();
+    const appContainer = document.getElementById('appContainer');
+    if (appContainer) appContainer.classList.remove('hidden');
+
+    loadNewsFromFirebase();
+    listenToAccessList(); 
+    listenToGlobalSettings();
+    listenToApprovalList(); 
+    startRealtimeSecurityCheck(); 
+    checkActiveUserSession(); 
+    
+    // Pemanggilan Fungsi Baru
+    listenToGallery();
+    listenToSejarah();
+    listenToRainbowStatus();
+    checkNotificationPreference();
+}
+
+// 2. FUNGSI NAVIGASI PINDAH HALAMAN SECARA AMAN
+function showSection(sectionId) {
+    document.getElementById('navOverlay').style.display = 'none';
+    
+    // Sembunyikan seluruh portal/container visual
+    const sections = document.querySelectorAll('.visual-section');
+    sections.forEach(sec => sec.classList.add('hidden'));
+    
+    // Tampilkan portal yang dipilih
+    document.getElementById(sectionId).classList.remove('hidden');
+}
+
+// Override fungsi openUserAuthPortal & openAdminPortal agar menggunakan satu sistem navigasi baku
+function openUserAuthPortal() { showSection('userAuthPortal'); }
+function openAdminPortal() { showSection('adminPortal'); checkAdminSession(); toggleLoginFields(); }
+
+// 3. LOGIKA POP-UP NOTIFIKASI BANNER
+function checkNotificationPreference() {
+    if (localStorage.getItem("news_notification_dismissed") === "true") {
+        document.getElementById('notificationBanner').classList.add('hidden');
+    }
+}
+function closeNotificationBanner() {
+    document.getElementById('notificationBanner').classList.add('slide-down');
+    localStorage.setItem("news_notification_dismissed", "true");
+}
+function acceptNotification() {
+    alert("Terima kasih! Anda akan menerima pembaruan informasi dari Lintaraya News secara otomatis.");
+    closeNotificationBanner();
+}
+
+// 4. LOGIKA REALTIME DATABASE SEJARAH (CMS & RENDER PUBLIK)
+function listenToSejarah() {
+    database.ref('website_sejarah').on('value', (snapshot) => {
+        const textData = snapshot.val() || "Belum ada catatan sejarah yang diunggah oleh Owner.";
+        document.getElementById('sejarahContentContainer').innerText = textData;
+        const cmsInput = document.getElementById('cmsSejarahInput');
+        if (cmsInput) cmsInput.value = textData;
+    });
+}
+function saveSejarahToFirebase() {
+    const text = document.getElementById('cmsSejarahInput').value.trim();
+    if(!text) return alert("Konten sejarah tidak boleh kosong!");
+    database.ref('website_sejarah').set(text).then(() => alert("Halaman Sejarah Berhasil Diperbarui!"));
+}
+
+// 5. LOGIKA REALTIME DATABASE GALERI UNLIMITED
+function listenToGallery() {
+    database.ref('website_gallery').on('value', (snapshot) => {
+        const grid = document.getElementById('galleryGridContainer');
+        grid.innerHTML = "";
+        if (!snapshot.exists()) {
+            grid.innerHTML = "<p style='color:#666; grid-column: 1/-1; text-align:center;'>Belum ada koleksi foto dokumentasi.</p>";
+            return;
+        }
+        snapshot.forEach((child) => {
+            const data = child.val();
+            grid.innerHTML = `
+                <div class="gallery-item">
+                    <img class="gallery-img" src="${data.url}" alt="Dokumentasi" onerror="this.src='https://via.placeholder.com/300x200/333/fff?text=Gambar+Rusak'">
+                    <div class="gallery-caption">${data.caption}</div>
+                </div>` + grid.innerHTML;
+        });
+    });
+}
+function uploadPhotoToGallery() {
+    const url = document.getElementById('cmsGalleryImageUrl').value.trim();
+    const caption = document.getElementById('cmsGalleryCaption').value.trim() || "Dokumentasi Foto Resmi";
+    if(!url) return alert("Kolom URL link foto wajib diisi!");
+    
+    database.ref('website_gallery').push({ url, caption }).then(() => {
+        alert("Foto Baru Sukses Ditambahkan Ke Galeri Publik!");
+        document.getElementById('cmsGalleryImageUrl').value = "";
+        document.getElementById('cmsGalleryCaption').value = "";
+    });
+}
+
+// 6. EXCLUSIVE CONFIGURATION: RAINBOW USERNAME LOGIC
+function listenToRainbowStatus() {
+    database.ref('owner_rainbow_status').on('value', (snapshot) => {
+        isRainbowActive = snapshot.val() || false;
+        const checkbox = document.getElementById('rainbowNameCheckbox');
+        if(checkbox) checkbox.checked = isRainbowActive;
+    });
+}
+function toggleRainbowStatus(statusValue) {
+    database.ref('owner_rainbow_status').set(statusValue);
+}
+
+// 7. SINKRONISASI COATING CLASS RAINBOW DI BERITA & KOMENTAR
+// Update modifikasi render pembuat berita di fungsi loadNewsFromFirebase() kamu pada bagian author:
+// Ganti baris: <div class="news-meta">Diposting oleh @${b.author} ...</div>
+// Menjadi:
+// <div class="news-meta">Diposting oleh <span class="${b.author === OWNER_USERNAME && isRainbowActive ? 'rainbow-text' : ''}">@${b.author}</span> — ${b.date}</div>
+
+// Dan update modifikasi render di fungsi listenToComments() kamu pada bagian nama komentator:
+// Ganti baris: <div class="comment-user">@${c.username} ...</div>
+// Menjadi:
+// <div class="comment-user"><span class="${c.username === OWNER_USERNAME && isRainbowActive ? 'rainbow-text' : ''}">@${c.username}</span> <small style="color:#999; font-size:10px;">(${label})</small></div>
