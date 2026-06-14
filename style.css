@@ -7,12 +7,18 @@
 
 body {
     background-color: #121212;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
     color: #ffffff;
+    transition: background 0.5s ease-in-out;
 }
 
 /* Header & Navbar */
 header {
-    background-color: #1a1a1a;
+    background-color: rgba(26, 26, 26, 0.9);
+    backdrop-filter: blur(5px);
     padding: 12px 20px;
     display: flex;
     justify-content: space-between;
@@ -80,10 +86,10 @@ header {
 
 /* Main Content */
 .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
-.section-title { background: #222; padding: 10px; border-left: 5px solid #e53935; margin-bottom: 20px; font-size: 20px; }
+.section-title { background: rgba(34, 34, 34, 0.85); padding: 10px; border-left: 5px solid #e53935; margin-bottom: 20px; font-size: 20px; text-transform: uppercase; font-weight: bold; }
 
 /* Card Berita & Badges */
-.news-card { background-color: #1a1a1a; border: 1px solid #333; border-radius: 4px; overflow: hidden; margin-bottom: 25px; }
+.news-card { background-color: rgba(26, 26, 26, 0.9); border: 1px solid #333; border-radius: 4px; overflow: hidden; margin-bottom: 25px; backdrop-filter: blur(3px); }
 .news-img { width: 100%; height: auto; display: block; object-fit: cover; max-height: 450px; }
 .news-meta { padding: 15px 15px 5px 15px; font-size: 13px; color: #aaa; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .news-title { padding: 0 15px 10px 15px; font-size: 22px; font-weight: bold; line-height: 1.4; color: #fff; }
@@ -96,19 +102,19 @@ header {
 .badge-admin { background-color: #333; color: #fff; border: 1px solid #555; }
 
 /* Form Box */
-.box { background: #1a1a1a; max-width: 500px; margin: 30px auto; padding: 25px; border-radius: 8px; border: 1px solid #333; }
-.box h2 { border-bottom: 2px solid #e53935; padding-bottom: 10px; margin-bottom: 20px; font-size: 20px; }
+.box { background: rgba(26, 26, 26, 0.95); max-width: 500px; margin: 30px auto; padding: 25px; border-radius: 8px; border: 1px solid #444; backdrop-filter: blur(5px); }
+.box h2 { border-bottom: 2px solid #e53935; padding-bottom: 10px; margin-bottom: 20px; font-size: 20px; text-align: center; }
 .box label { display: block; margin-bottom: 6px; font-size: 14px; color: #ccc; font-weight: 600; }
 .box input, .box textarea, .box button, .box select { width: 100%; padding: 12px; margin-bottom: 15px; background: #222; border: 1px solid #404040; color: #fff; border-radius: 4px; }
 .box input:focus, .box textarea:focus, .box select:focus { border-color: #e53935; outline: none; }
-.box button { background: #e53935; font-weight: bold; cursor: pointer; border: none; }
+.box button { background: #e53935; font-weight: bold; cursor: pointer; border: none; color: #fff; }
 .box button:hover { background: #b71c1c; }
 .box .logout-btn { background: #444; margin-top: 5px; }
 .hidden { display: none !important; }
 
 /* Table */
 table { width: 100%; border-collapse: collapse; }
-table th, table td { padding: 6px; border-bottom: 1px solid #222; }
+table th, table td { padding: 8px 6px; border-bottom: 1px solid #222; }
 
 /* Discord Button */
 .discord-section { text-align: center; margin: 30px 0; }
@@ -119,7 +125,7 @@ table th, table td { padding: 6px; border-bottom: 1px solid #222; }
 }
 
 footer {
-    background-color: #141414; text-align: center; padding: 25px 15px; margin-top: 50px;
+    background-color: rgba(20, 20, 20, 0.95); text-align: center; padding: 25px 15px; margin-top: 50px;
     border-top: 1px solid #222; font-size: 13px; color: #777; line-height: 1.8;
 }
 .owner-tag { color: #e53935; font-weight: bold; }
@@ -128,4 +134,4 @@ footer {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #050505;
     color: #ffffff; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center;
 }
-#geoBlocker h1 { color: #e53935; margin-bottom: 15px; }
+#geoBlocker h1 { color: #e53935; margin-bottom: 15px; letter-spacing: 1px; }
