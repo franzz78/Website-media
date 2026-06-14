@@ -22,9 +22,10 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 let currentCmsTab = "news"; 
 let currentAuthMode = "register";
+let isOwnerBypassed = false; // Flag status bypass maintenance lokal perangkat Owner
 
 // =========================================================================
-// 2. SISTEM GEOLOCATION
+// 2. SISTEM REALTIME MAINTENANCE & GEOLOCATION
 // =========================================================================
 const BLACKLIST_REGIONS = [
     "batam", "kepulauan riau", "kepri", "papua", "papua barat", "papua selatan", 
@@ -32,7 +33,66 @@ const BLACKLIST_REGIONS = [
     "ntt", "nusa tenggara barat", "ntb", "maluku", "maluku utara", "aceh"
 ];
 
+// MENDENGARKAN STATUS LOCKDOWN MAINTENANCE DARI FIREBASE SECARA REALTIME
+function listenToMaintenanceMode() {
+    database.ref('maintenance_status').on('value', (snapshot) => {
+        const isMaintenance = snapshot.val() || false;
+        const mBlocker = document.getElementById('maintenanceBlocker');
+        const statusLabel = document.getElementById('maintenanceStatusLabel');
+
+        // Update teks status di panel internal owner
+        if (statusLabel) {
+            statusLabel.innerText = isMaintenance ? "Status: AKTIF (Website Terkunci Massal)" : "Status: MATI (Website Normal Publik)";
+            statusLabel.style.color = isMaintenance ? "#ff1744" : "#00e676";
+        }
+
+        // Jalankan proteksi penguncian
+        if (isMaintenance) {
+            // Jika yang mengakses adalah owner yang sudah menembus bypass, abaikan blocker
+            if (sessionStorage.getItem("roleActive") === "owner" || isOwnerBypassed) {
+                mBlocker.classList.add('hidden');
+            } else {
+                mBlocker.classList.remove('hidden');
+            }
+        } else {
+            mBlocker.classList.add('hidden');
+            isOwnerBypassed = false; // reset status bypass saat perbaikan selesai
+        }
+    });
+}
+
+// Fungsi sakelar pengubah kondisi maintenance oleh owner
+function setMaintenanceMode(status) {
+    database.ref('maintenance_status').set(status).then(() => {
+        alert(status ? "WEBSITE BERHASIL DIKUNCI MASAL (MAINTENANCE AKTIF)!" : "WEBSITE KEMBALI NORMAL UNTUK PUBLIK!");
+    });
+}
+
+// Fungsi tombol tembus rahasia untuk owner di halaman blocker
+function bypassMaintenanceMode() {
+    const enteredPass = document.getElementById('maintenanceBypassPass').value;
+    if (enteredPass === OWNER_PASSWORD) {
+        alert("Bypass Diterima! Selamat Datang Owner. Membuka gerbang utama...");
+        isOwnerBypassed = true;
+        
+        // Langsung arahkan secara otomatis ke panel admin login owner
+        document.getElementById('maintenanceBlocker').classList.add('hidden');
+        openAdminPortal();
+        
+        // Isi otomatis form login untuk mempermudah owner masuk panel
+        document.getElementById('loginType').value = 'owner';
+        toggleLoginFields();
+        document.getElementById('usernameInput').value = OWNER_USERNAME;
+        document.getElementById('passwordInput').value = OWNER_PASSWORD;
+    } else {
+        alert("Password salah! Akses bypass ditolak keras.");
+    }
+}
+
 function checkLocation() {
+    // Jalankan pengecekan status maintenance terlebih dahulu sebelum validasi GPS
+    listenToMaintenanceMode();
+
     if (!navigator.geolocation) {
         showBlocker("TIDAK BISA MENGAKSES WEBSITE", "Browser Anda tidak memiliki fitur GPS.");
         return;
@@ -67,9 +127,9 @@ function checkLocation() {
                         loadNewsFromFirebase();
                         listenToAccessList(); 
                         listenToGlobalSettings();
-                        listenToApprovalList(); // Memantau daftar approval register komentar di sisi Owner
+                        listenToApprovalList(); 
                         startRealtimeSecurityCheck(); 
-                        checkActiveUserSession(); // Memeriksa sesi log masuk member komentar
+                        checkActiveUserSession(); 
                     }
                 } else { showBlocker("GAGAL OTENTIKASI", "Gagal memproses nama wilayah."); }
             })
@@ -104,7 +164,7 @@ function startRealtimeSecurityCheck() {
 }
 
 // =========================================================================
-// 3. MASTER SETTINGS & AUDIO ENGINE (AUTOPLAY YOUTUBE ENGINE LIVE BERSUARA)
+// 3. MASTER SETTINGS & AUDIO ENGINE (AUTOPLAY YOUTUBE)
 // =========================================================================
 function listenToGlobalSettings() {
     database.ref('global_settings').on('value', (snapshot) => {
@@ -142,7 +202,6 @@ function renderAudioPlayer(url, volume) {
     else if (url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1].split("?")[0];
 
     if (videoId) {
-        // Embed YouTube dipaksa autoplay langsung bersuara secara global dengan manipulasi script interaksi
         container.innerHTML = `<iframe id="ytGlobalPlayer" width="100" height="100" src="https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&enablejsapi=1" allow="autoplay"></iframe>`;
     }
 }
@@ -166,7 +225,6 @@ document.addEventListener('input', function(e) {
     }
 });
 
-// Pemicu otomatis agar browser memperbolehkan suara langsung aktif saat user klik apapun di web
 document.addEventListener('click', () => {
     const iframe = document.getElementById('ytGlobalPlayer');
     if (iframe) {
@@ -176,7 +234,7 @@ document.addEventListener('click', () => {
 }, { once: true });
 
 // =========================================================================
-// 4. PORTAL AUTENTIKASI MEMBER KOMENTAR (ACC/TOLAK/LIMIT RESET 6 MENIT)
+// 4. PORTAL AUTENTIKASI MEMBER KOMENTAR
 // =========================================================================
 function openUserAuthPortal() {
     document.getElementById('navOverlay').style.display = 'none';
@@ -185,6 +243,7 @@ function openUserAuthPortal() {
     document.getElementById('userAuthPortal').classList.remove('hidden');
 }
 
+/* Memperbaiki pemanggilan penutupan agar sinkron */
 function closeAllPortals() {
     document.getElementById('userAuthPortal').classList.add('hidden');
     document.getElementById('adminPortal').classList.add('hidden');
@@ -215,17 +274,15 @@ function handleUserRegister() {
     if (username.includes(" ")) return alert("Username tidak boleh mengandung spasi!");
 
     if (currentAuthMode === 'register') {
-        // Cari tahu apakah username sudah pernah diajukan
         database.ref('comment_users/' + username.toLowerCase()).once('value', (snap) => {
             if (snap.exists()) {
                 alert("Username tersebut sudah terdaftar/sedang dalam proses review!");
             } else {
-                // Masukkan data registrasi baru dengan status awal 'pending'
                 database.ref('comment_users/' + username.toLowerCase()).set({
                     username: username,
                     password: password,
-                    status: 'pending', // Nilai status: pending, approved, rejected
-                    commentCount: 5,   // Kuota awal default bagi yang ditolak/pending
+                    status: 'pending',
+                    commentCount: 5,
                     lastResetTime: Date.now()
                 }).then(() => {
                     alert("Pendaftaran berhasil diajukan! Menunggu persetujuan Owner di menu Panel.");
@@ -235,7 +292,6 @@ function handleUserRegister() {
             }
         });
     } else {
-        // MODE LOG IN MEMBER
         database.ref('comment_users/' + username.toLowerCase()).once('value', (snap) => {
             if (snap.exists() && snap.val().password === password) {
                 const userData = snap.val();
@@ -259,7 +315,6 @@ function checkActiveUserSession() {
             if(!snap.exists()) { logoutMember(); return; }
             const u = snap.val();
             
-            // Logika pengecekan sisa kuota & Reset waktu otomatis 6 menit
             let sisaKomentar = u.commentCount;
             let statusTeks = u.status === 'approved' ? '🚀 VERIFIED MEMBER (Bebas Komentar)' : (u.status === 'rejected' ? '⚠️ DITOLAK (Limit Mode Aktif)' : '⏳ PENDING REVIEW');
             
@@ -267,7 +322,7 @@ function checkActiveUserSession() {
                 const waktuSekarang = Date.now();
                 const selisihWaktu = waktuSekarang - u.lastResetTime;
                 
-                if (selisihWaktu >= 6 * 60 * 1000) { // Jika sudah melewati batas waktu 6 menit
+                if (selisihWaktu >= 6 * 60 * 1000) {
                     sisaKomentar = 5;
                     database.ref('comment_users/' + memberUser.toLowerCase()).update({
                         commentCount: 5,
@@ -351,16 +406,13 @@ function postComment(newsKey) {
     const commentText = inputField.value.trim();
     if (!commentText) return alert("Pesan komentar tidak boleh kosong!");
 
-    // Ambil data status akun komentator dari Firebase secara real-time
     database.ref('comment_users/' + memberUser.toLowerCase()).once('value', (snap) => {
         if (!snap.exists()) return;
         const u = snap.val();
 
-        // Validasi pembatasan sisa komentar jika statusnya ditolak/pending
         if (u.status !== 'approved') {
             const waktuSekarang = Date.now();
             if (waktuSekarang - u.lastResetTime >= 6 * 60 * 1000) {
-                // Auto Reset instan jika masa tunggu 6 menit terlewati saat hendak posting
                 u.commentCount = 5;
                 database.ref('comment_users/' + memberUser.toLowerCase()).update({ commentCount: 5, lastResetTime: waktuSekarang });
             }
@@ -371,7 +423,6 @@ function postComment(newsKey) {
             }
         }
 
-        // Jalankan perintah post komentar ke berita terkait
         const commentData = {
             username: u.username,
             text: commentText,
@@ -381,8 +432,6 @@ function postComment(newsKey) {
 
         database.ref(`berita/${newsKey}/komentar`).push(commentData).then(() => {
             inputField.value = "";
-            
-            // Potong kuota komentar jika statusnya bukan 'approved'
             if (u.status !== 'approved') {
                 database.ref('comment_users/' + memberUser.toLowerCase()).update({
                     commentCount: u.commentCount - 1
@@ -417,7 +466,7 @@ function listenToComments(newsKey) {
                 </div>
             `;
         });
-        listDiv.scrollTop = listDiv.scrollHeight; // Auto scroll ke bawah
+        listDiv.scrollTop = listDiv.scrollHeight;
     });
 }
 
@@ -436,6 +485,11 @@ function switchCmsTab(tabName) {
         btnNews.style.backgroundColor = "#2e7d32"; btnNews.style.color = "#fff";
         btnAnnounce.style.backgroundColor = "#444"; btnAnnounce.style.color = "#aaa";
         formNews.classList.remove('hidden'); formAnnounce.classList.add('hidden');
+        submitBtn.innerText = "Publish Berita & Kirim ke Discord";
+    } else {
+        btnNews.style.backgroundColor = "#444"; btnNews.style.color = "#aaa";
+        btnAnnounce.style.backgroundColor = "#e53935"; btnAnnounce.style.color = "#fff";
+        formNews.classList.add('hidden'); formAnnounce.classList.remove('hidden');
         submitBtn.innerText = "Siarkan Pengumuman ke Discord";
     }
 }
@@ -614,58 +668,6 @@ function listenToAccessList() {
     });
 }
 
-function executePublish() {
-    if (currentCmsTab === 'news') { savePost(); } else { sendAnnouncement(); }
-}
-
-function loadNewsFromFirebase() {
-    database.ref('berita').on('value', (snapshot) => {
-        const newsContainer = document.getElementById('newsContainer');
-        newsContainer.innerHTML = '';
-        if (!snapshot.exists()) {
-            newsContainer.innerHTML = '<p style="text-align:center;color:#555;padding:20px;">Belum ada berita terbit.</p>';
-            return;
-        }
-        
-        let newsKeys = [];
-        let newsData = [];
-        snapshot.forEach((childSnapshot) => { 
-            newsKeys.push(childSnapshot.key);
-            newsData.push(childSnapshot.val()); 
-        });
-
-        // Balik urutan untuk menampilkan berita terbaru di paling atas
-        for (let i = newsData.length - 1; i >= 0; i--) {
-            const item = newsData[i];
-            const key = newsKeys[i];
-
-            let badgeHTML = `<span class="badge badge-admin">KONTRIBUTOR</span>`;
-            if(item.role === 'dispenad') badgeHTML = `<span class="badge badge-dispenad">🎖️ DISPENAD TNI</span>`;
-            else if(item.role === 'owner') badgeHTML = `<span class="badge badge-owner">👑 OWNER</span>`;
-
-            newsContainer.innerHTML += `
-                <div class="news-card">
-                    <img src="${item.image}" class="news-img" alt="Foto">
-                    <div class="news-meta">${badgeHTML} <span>${item.date} • Oleh: <strong>${item.author}</strong></span></div>
-                    <div class="news-title">${item.title}</div>
-                    <div class="news-content">${item.content}</div>
-                    
-                    <div class="comment-section">
-                        <div class="comment-header">💬 Kolom Komentar Publik</div>
-                        <div class="comment-list" id="list-comment-${key}"></div>
-                        <div class="comment-box-input">
-                            <input type="text" id="input-comment-${key}" placeholder="Tulis komentar publik kamu di sini...">
-                            <button onclick="postComment('${key}')">Kirim</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Nyalakan listener data real-time khusus komentar untuk berita ini
-            listenToComments(key);
-        }
-    });
-}
 function savePost() {
     const title = document.getElementById('postTitle').value.trim();
     const image = document.getElementById('postImage').value.trim() || "https://via.placeholder.com/800x450/333/fff?text=MEDIA+RAYA.ID";
