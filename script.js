@@ -755,3 +755,68 @@ function toggleRainbowStatus(statusValue) {
 // Ganti baris: <div class="comment-user">@${c.username} ...</div>
 // Menjadi:
 // <div class="comment-user"><span class="${c.username === OWNER_USERNAME && isRainbowActive ? 'rainbow-text' : ''}">@${c.username}</span> <small style="color:#999; font-size:10px;">(${label})</small></div>
+
+// Mengatur Buka Tutup Akses Sub Menu Kelola di Bawah Grid Owner secara Mandiri
+function openOwnerSubSection(subSectionId) {
+    const targetElement = document.getElementById(subSectionId);
+    const isAlreadyOpen = !targetElement.classList.contains('hidden');
+
+    // Sembunyikan semua box terlebih dahulu
+    const subBoxes = document.querySelectorAll('.sub-owner-box');
+    subBoxes.forEach(box => box.classList.add('hidden'));
+
+    // Jika tadinya tertutup, maka tampilkan
+    if (!isAlreadyOpen) {
+        targetElement.classList.remove('hidden');
+    }
+}
+
+// Tombol Pintas Mengubah Sakelar Status Lockdown Langsung Dari Menu Owner
+function toggleMaintenanceViaButton() {
+    setMaintenanceMode(!globalMaintenanceState);
+}
+
+// Tempelkan logika listener ini di dalam blok penanganan sinkronisasi Firebase kamu
+// Mendengarkan status lockdown secara Realtime
+database.ref('maintenance_mode').on('value', (snapshot) => {
+    globalMaintenanceState = snapshot.val() || false;
+    const labelBtn = document.getElementById('maintStatusBtnLabel');
+    if(labelBtn) {
+        labelBtn.innerText = globalMaintenanceState ? "AKSES DITUTUP (Lockdown)" : "AKSES DIBUKA (Normal)";
+    }
+    
+    // Tampilkan screen blocker jika status maintenance diatur TRUE
+    const blocker = document.getElementById('maintenanceBlocker');
+    if(globalMaintenanceState) {
+        blocker.classList.remove('hidden');
+    } else {
+        blocker.classList.add('hidden');
+    }
+});
+
+
+// ==========================================
+// LOGIKA BADGE VERIFIED BIRU PADA KOMENTAR
+// ==========================================
+// Saat kamu me-render baris list komentar di dalam fungsi listenToComments(), 
+// tambahkan pengondisian cek user owner untuk menyisipkan elemen badge terverifikasi:
+
+/* CONTOH PENERAPANNYA DI DALAM SCRIPT RENDER KOMENTAR KAMU:
+snapshot.forEach((child) => {
+    const c = child.val();
+    
+    // 1. Tentukan apakah dia menggunakan class rainbow text atau normal
+    let nameClass = (c.username === OWNER_USERNAME && isRainbowActive) ? "rainbow-text" : "";
+    
+    // 2. Tentukan letak badge verified biru jika usernamenya pas milik owner
+    let verifiedBadgeHTML = (c.username === OWNER_USERNAME) ? `<span class="verified-badge">☑ Verified</span>` : "";
+
+    gridKomentar.innerHTML += `
+        <div class="comment-item">
+            <div class="comment-user">
+                <span class="${nameClass}">@${c.username}</span> ${verifiedBadgeHTML}
+            </div>
+            <p class="comment-text">${c.text}</p>
+        </div>`;
+});
+*/
