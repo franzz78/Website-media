@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
 </head>
-<body>
+<body id="webBody">
+
+    <div id="musicPlayerContainer" style="display: none;"></div>
 
     <div id="geoBlocker">
         <h1>MEMERIKSA LOKASI ANDA...</h1>
@@ -17,10 +19,13 @@
     <div id="appContainer" class="hidden">
         
         <header>
-            <div class="logo-wrapper">
-                <div class="logo-main">[AFI] ARMED FORCE INDONESIA</div>
-                <div class="logo-sub">MEDIA RAYA<span>.ID</span></div>
-                <div class="logo-managed">Dikelolah oleh: Management AFI</div>
+            <div class="logo-area" style="display: flex; align-items: center; gap: 12px;">
+                <img id="webLogoImg" src="https://tareqwavlgqoexxffuuc.supabase.co/storage/v1/object/sign/Logo_Website/Logo_Website/file_0000000018e071fab28396ba3dc0a65d.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kNWIxNTEyZS03YTE5LTQzY2UtYWUxNC00ZmRkNzMyZmIyODMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJMb2dvX1dlYnNpdGUvTG9nb19XZWJzaXRlL2ZpbGVfMDAwMDAwMDAxOGUwNzFmYWIyODM5NmJhM2RjMGE2NWQucG5nIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4MTQ1NTE3MCwiZXhwIjoxODEyOTkxMTcwfQ.AAoSqVvE81Mxfw1Zcc9JGR-tm_TDGnM5lDB10S-2Oyo" alt="Logo AFI" style="height: 45px; width: 45px; object-fit: cover; border-radius: 4px;">
+                <div class="logo-wrapper">
+                    <div class="logo-main">[AFI] ARMED FORCE INDONESIA</div>
+                    <div class="logo-sub">MEDIA RAYA<span>.ID</span></div>
+                    <div class="logo-managed">Dikelolah oleh: Management AFI</div>
+                </div>
             </div>
             <button class="menu-toggle" onclick="toggleMenu()">☰</button>
         </header>
@@ -72,10 +77,13 @@
                     <input type="text" id="nrpInput" placeholder="Contoh: DISPENAD-2026-XXXX">
                 </div>
 
-                <label>Password Akun</label>
-                <input type="password" id="passwordInput" placeholder="Masukkan Password">
+                <div id="inputPasswordGroup">
+                    <label>Password Akun</label>
+                    <input type="password" id="passwordInput" placeholder="Masukkan Password">
+                </div>
                 
                 <button onclick="handleLogin()">Otentikasi Masuk</button>
+                <button id="biometricLoginBtn" class="hidden" onclick="loginWithBiometric()" style="background-color: #00e676; color: #000; font-weight: bold; margin-top: -5px; margin-bottom: 15px;">🔐 Masuk Menggunakan Sidik Jari</button>
                 <button class="logout-btn" onclick="closeAdminPortal()">Kembali ke Berita</button>
             </div>
 
@@ -83,24 +91,50 @@
                 <h2 id="cmsHeading">Panel Kontrol Kontributor</h2>
                 
                 <div id="ownerControls" class="hidden" style="margin-bottom: 20px; padding: 15px; border: 2px solid #b71c1c; border-radius: 6px; background-color: #1f1414;">
-                    <p style="font-size: 13px; color: #ff1744; margin-bottom: 10px; font-weight: bold;">⚡ OWNER PRIVILEGES ACTIVE (@nathanael_0918)</p>
+                    <p style="font-size: 13px; color: #ff1744; margin-bottom: 12px; font-weight: bold;">⚡ OWNER MASTER SYSTEM CONFIGURATION ACTIVE (@nathanael_0918)</p>
                     
+                    <div style="margin-bottom: 15px; background: #2b2b3d; padding: 12px; border-radius: 4px; border: 1px solid #3f3f5c;">
+                        <span style="font-size: 12px; font-weight: bold; color: #00e676; display: block; margin-bottom: 10px;">🎛️ PENGATURAN GLOBAL WEBSITE (MASTER SETTINGS)</span>
+                        
+                        <label style="font-size: 12px;">URL Logo Website Baru</label>
+                        <input type="text" id="setWebLogo" placeholder="Tempel link URL gambar logo...">
+
+                        <label style="font-size: 12px;">URL Gambar Background Website</label>
+                        <input type="text" id="setWebBackground" placeholder="Tempel link URL gambar background...">
+
+                        <label style="font-size: 12px;">Link Musik Latar (YouTube / Spotify Share Link)</label>
+                        <input type="text" id="setWebMusic" placeholder="https://www.youtube.com/watch?v=... atau link spotify">
+
+                        <label style="font-size: 12px;">Kontrol Volume Musik Default</label>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                            <input type="range" id="setWebVolume" min="0" max="100" value="50" style="margin-bottom: 0; cursor: pointer;">
+                            <span id="volumeValLabel" style="font-size: 12px; font-weight: bold; min-width: 35px;">50%</span>
+                        </div>
+
+                        <button onclick="saveGlobalSettings()" style="background-color: #00e676; color: #000; padding: 8px; font-size: 12px; margin-bottom: 0;">Simpan Pengaturan Utama</button>
+                    </div>
+
+                    <div style="margin-bottom: 15px; background: #2b2b1b; padding: 12px; border-radius: 4px; border: 1px solid #5c5c14;">
+                        <span style="font-size: 12px; font-weight: bold; color: #fff; display: block; margin-bottom: 8px;">☝️ KONFIGURASI BIOMETRIK (SIDIK JARI)</span>
+                        <button onclick="setupBiometric()" style="background-color: #f57f17; padding: 8px; font-size: 12px; margin-bottom: 0; color: #fff;">Daftarkan Sidik Jari Perangkat Ini</button>
+                    </div>
+
                     <div style="margin-bottom: 15px; background: #2b1b1b; padding: 12px; border-radius: 4px; border: 1px solid #5c1414;">
-                        <span style="font-size: 12px; font-weight: bold; color: #fff; display: block; margin-bottom: 8px;">🔒 TUTUP AKSES MEDIA (Register Admin Baru)</span>
+                        <span style="font-size: 12px; font-weight: bold; color: #fff; display: block; margin-bottom: 8px;">🔒 TAMBAH AKSES MEDIA (Register Admin Baru)</span>
                         <input type="text" id="newAdminUser" placeholder="Ketik Username Baru (Tanpa Spasi)..." style="margin-bottom: 8px; padding: 8px;">
                         <input type="password" id="newAdminPass" placeholder="Set Password Akun..." style="margin-bottom: 8px; padding: 8px;">
                         <button onclick="generateAdmin()" style="background-color: #2e7d32; padding: 8px; font-size: 12px; margin-bottom: 0;">Daftarkan & Beri Akses</button>
                     </div>
 
                     <div style="margin-bottom: 15px; background: #111; padding: 10px; border-radius: 4px; border: 1px solid #333;">
-                        <span style="font-size: 12px; font-weight: bold; color: #aaa; display: block; margin-bottom: 6px;">📋 AKSES LIST MONITORING</span>
-                        <div style="max-height: 150px; overflow-y: auto;">
+                        <span style="font-size: 12px; font-weight: bold; color: #aaa; display: block; margin-bottom: 6px;">📋 AKSES LIST MONITORING & MANAGEMENT</span>
+                        <div style="max-height: 180px; overflow-y: auto;">
                             <table style="width: 100%; font-size: 11px; border-collapse: collapse; text-align: left;">
                                 <thead style="background: #1a1a1a; position: sticky; top: 0;">
                                     <tr style="color: #888; border-bottom: 1px solid #333;">
                                         <th style="padding: 4px;">Username</th>
-                                        <th style="padding: 4px;">Terdaftar</th>
                                         <th style="padding: 4px;">Status</th>
+                                        <th style="padding: 4px; text-align: center;">Tindakan</th>
                                     </tr>
                                 </thead>
                                 <tbody id="accessListTable">
