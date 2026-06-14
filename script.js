@@ -133,7 +133,16 @@ function checkLocation() {
                     }
                 } else { showBlocker("GAGAL OTENTIKASI", "Gagal memproses nama wilayah."); }
             })
-            .catch(() => { showBlocker("MASALAH JARINGAN", "Hambatan koneksi saat memetakan lokasi."); });
+            .catch(() => { 
+                // DIUBAH: Jika masalah jaringan/API lambat, tampilkan animasi loading spinner secara terus menerus
+                const blocker = document.getElementById('geoBlocker');
+                blocker.classList.remove('hidden');
+                blocker.innerHTML = `
+                    <div class="spinner"></div>
+                    <h1 style="font-size: 18px; letter-spacing: 1px;">MENGOPTIMALKAN JARKOM...</h1>
+                    <p style="color: #888;">Koneksi ke server satelit sedikit lambat. Harap tunggu sebentar...</p>
+                `;
+            });
         },
         () => { showBlocker("GPS WAJIB AKTIF", "Anda wajib mengaktifkan izin GPS Lokasi untuk masuk."); },
         { enableHighAccuracy: true, timeout: 15000 }
