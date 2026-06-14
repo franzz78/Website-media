@@ -25,19 +25,19 @@ let currentAuthMode = "register";
 let isOwnerBypassed = false; 
 
 // =========================================================================
-// 2. INISIALISASI WEBSITE LANGSUNG (BEBAS GPS / INSTAN SELURUH INDONESIA)
+// 2. INISIALISASI WEBSITE DIRECTLY (TANPA CEK LOKASI / GPS LANGSUNG LANJUT)
 // =========================================================================
 function initWebsiteDirectly() {
-    // 1. Dengarkan status maintenance mode global
+    // Jalankan pemantauan status maintenance mode realtime
     listenToMaintenanceMode();
 
-    // 2. Langsung buka interface utama website
+    // Tampilkan container aplikasi utama tanpa interupsi geolokasi
     const appContainer = document.getElementById('appContainer');
     if (appContainer) {
         appContainer.classList.remove('hidden');
     }
 
-    // 3. Muat seluruh relasi fungsional dari Firebase
+    // Hubungkan dan sinkronkan seluruh fungsi dengan database Firebase
     loadNewsFromFirebase();
     listenToAccessList(); 
     listenToGlobalSettings();
@@ -448,6 +448,7 @@ function toggleMenu() {
     overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
 }
 
+// Membuka panel administrasi tanpa tumpang tindih
 function openAdminPortal() {
     document.getElementById('navOverlay').style.display = 'none';
     document.getElementById('mainPortal').classList.add('hidden');
