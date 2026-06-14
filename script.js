@@ -1,17 +1,19 @@
 // =========================================================================
-// 1. KUNCI KONFIGURASI DATABASE & WEBHOOK (TEMPEL DATA MILIKMU DI SINI)
+// 1. KUNCI KONFIGURASI DATABASE & WEBHOOK (TERINTEGRASI FIREBASE & DISCORD)
 // =========================================================================
 const firebaseConfig = {
-    apiKey: "PASTE_API_KEY_FIREBASE_MU_DISINI",
-    authDomain: "PROJECT_ID_MU.firebaseapp.com",
-    databaseURL: "https://PROJECT_ID_MU-default-rtdb.firebaseio.com",
-    projectId: "PROJECT_ID_MU",
-    storageBucket: "PROJECT_ID_MU.appspot.com",
-    messagingSenderId: "SENDER_ID_MU",
-    appId: "APP_ID_MU"
+  apiKey: "AIzaSyD9BmV4XKXuMWa4PZHpb7Bbt-rHs61m3lE",
+  authDomain: "absensi-polri.firebaseapp.com",
+  databaseURL: "https://absensi-polri-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "absensi-polri",
+  storageBucket: "absensi-polri.firebasestorage.app",
+  messagingSenderId: "19006760644",
+  appId: "1:19006760644:web:b7dac0410e47877ded4b91",
+  measurementId: "G-82KHRYZBN0"
 };
 
-const DISCORD_WEBHOOK_URL = "PASTE_LINK_WEBHOOK_DISCORD_MU_DISINI";
+// URL Webhook Resmi dari Server Discord AFI
+const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1500117207969960079/SYsNhmAeoiO1Exsl-dAIqG2RYoJy546mrRGTvIIjGmQJbOA-XrF17bK8GXXYS5khuUf8";
 
 // ID Role Discord Yang Di-tag Otomatis
 const DISCORD_ROLE_TAG = "<@&1481911914404642846>";
@@ -162,14 +164,12 @@ function handleLogin() {
     if (type === 'whitelist') {
         const user = document.getElementById('usernameInput').value.trim().toLowerCase();
         
-        // Pengecekan Akun Terdaftar bentukan Owner di Database
         database.ref('whitelist_admins/' + user).once('value', (snapshot) => {
             if (snapshot.exists() && snapshot.val().password === pass) {
                 alert("Akses Masuk Kontributor Diterima!");
                 sessionStorage.setItem("adminActive", snapshot.val().username);
                 sessionStorage.setItem("roleActive", "admin");
                 
-                // Ubah status target user menjadi ONLINE secara realtime
                 database.ref('whitelist_admins/' + user + '/status').set("Online");
                 checkAdminSession();
             } else {
@@ -206,7 +206,6 @@ function checkAdminSession() {
         document.getElementById('cmsBox').classList.remove('hidden');
         document.getElementById('postAuthor').value = currentAdmin;
         
-        // Atur UI jika dia Owner, munculkan menu Tutup Akses Media
         if(role === 'owner') {
             document.getElementById('ownerControls').classList.remove('hidden');
             document.getElementById('cmsHeading').innerText = "👑 PANEL KONTROL PENUH OWNER";
@@ -227,7 +226,6 @@ function handleLogout() {
     const role = sessionStorage.getItem("roleActive");
 
     if (role === 'admin' && currentAdmin) {
-        // Kembalikan statusnya jadi Offline di database saat log out
         database.ref('whitelist_admins/' + currentAdmin.toLowerCase() + '/status').set("Offline");
     }
 
@@ -264,7 +262,6 @@ function generateAdmin() {
         status: "Offline" 
     };
 
-    // Menyimpan data registrasi user ke database pusat
     database.ref('whitelist_admins/' + user.toLowerCase()).set(adminData)
     .then(() => {
         alert(`SUKSES REGISTRASI!\nAkun "${user}" telah terdaftar & aktif di database.`);
@@ -274,7 +271,6 @@ function generateAdmin() {
 }
 
 function listenToAccessList() {
-    // Memantau tabel admin dari Firebase secara realtime untuk panel owner
     database.ref('whitelist_admins').on('value', (snapshot) => {
         const tbody = document.getElementById('accessListTable');
         tbody.innerHTML = '';
@@ -391,16 +387,12 @@ function sendAnnouncement() {
 }
 
 function sendToDiscord(type, data, shouldTag) {
-    if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes("PASTE_LINK")) return;
+    if (!DISCORD_WEBHOOK_URL) return;
 
     let contentString = shouldTag ? DISCORD_ROLE_TAG : ""; 
     let embedObject = {};
 
     if(type === 'news') {
-        let botIdentity = "MEDIA RAYA KONTRIBUTOR";
-        if(data.role === 'dispenad') botIdentity = "🪖 DISPENAD TNI-AD NEWS SERVICE";
-        if(data.role === 'owner') botIdentity = "👑 OWNER CONTROL CENTER";
-
         embedObject = {
             title: `📰 Berita Baru: ${data.title}`,
             description: data.content.substring(0, 900) + "...", 
@@ -444,4 +436,4 @@ function clearAllNews() {
 }
 
 window.onload = checkLocation;
-          
+        
