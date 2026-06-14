@@ -3,12 +3,12 @@
   "name": "[AFI] ARMED FORCE INDONESIA - MEDIA RAYA.ID",
   "icons": [
     {
-      "src": "https://via.placeholder.com/192x192/1a1a1a/ffffff?text=AFI",
+      "src": "https://tareqwavlgqoexxffuuc.supabase.co/storage/v1/object/sign/Logo_Website/Logo_Website/file_0000000018e071fab28396ba3dc0a65d.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kNWIxNTEyZS03YTE5LTQzY2UtYWUxNC00ZmRkNzMyZmIyODMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJMb2dvX1dlYnNpdGUvTG9nb19XZWJzaXRlL2ZpbGVfMDAwMDAwMDAxOGUwNzFmYWIyODM5NmJhM2RjMGE2NWQucG5nIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4MTQ1NTE3MCwiZXhwIjoxODEyOTkxMTcwfQ.AAoSqVvE81Mxfw1Zcc9JGR-tm_TDGnM5lDB10S-2Oyo",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "https://via.placeholder.com/512x512/1a1a1a/ffffff?text=AFI+MEDIA",
+      "src": "https://tareqwavlgqoexxffuuc.supabase.co/storage/v1/object/sign/Logo_Website/Logo_Website/file_0000000018e071fab28396ba3dc0a65d.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kNWIxNTEyZS03YTE5LTQzY2UtYWUxNC00ZmRkNzMyZmIyODMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJMb2dvX1dlYnNpdGUvTG9nb19XZWJzaXRlL2ZpbGVfMDAwMDAwMDAxOGUwNzFmYWIyODM5NmJhM2RjMGE2NWQucG5nIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4MTQ1NTE3MCwiZXhwIjoxODEyOTkxMTcwfQ.AAoSqVvE81Mxfw1Zcc9JGR-tm_TDGnM5lDB10S-2Oyo",
       "type": "image/png",
       "sizes": "512x512"
     }
@@ -19,4 +19,3 @@
   "display": "standalone",
   "orientation": "portrait"
 }
-
