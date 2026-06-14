@@ -11,6 +11,17 @@
 
     <div id="musicPlayerContainer" style="display: none;"></div>
 
+    <div id="notificationBanner" class="notification-banner">
+        <div class="notification-content">
+            <span class="bell-icon">🔔</span>
+            <p><strong>Aktifkan notifikasi</strong> untuk mendapat kabar terbaru dari Lintaraya News</p>
+        </div>
+        <div class="notification-actions">
+            <button class="btn-noti-active" onclick="acceptNotification()">Aktifkan</button>
+            <button class="btn-noti-later" onclick="closeNotificationBanner()">Nanti</button>
+        </div>
+    </div>
+
     <div id="maintenanceBlocker" class="hidden">
         <div class="maintenance-box">
             <div class="maintenance-icon">⛔</div>
@@ -30,7 +41,7 @@
         
         <header>
             <div class="logo-area" style="display: flex; align-items: center; gap: 15px;">
-                <img id="webLogoImg" src="https://tareqwavlgqoexxffuuc.supabase.co/storage/v1/object/sign/Logo_Website/Logo_Website/file_0000000018e071fab28396ba3dc0a65d.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kNWIxNTEyZS03YTE5LTQzY2UtYWUxNC00ZmRkNzMyZmIyODMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJMb2dvX1dlYnNpdGUvTG9nb19XZWJzaXRlL2ZpbGVfMDAwMDAwMDAxOGUwNzFmYWIyODM5NmJhM2RjMGE2NWQucG5nIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4MTQ1NTE3MCwiZXhwIjoxODEyOTkxMTcwfQ.AAoSqVvE81Mxfw1Zcc9JGR-tm_TDGnM5lDB10S-2Oyo" alt="Logo AFI" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #66fcf1; box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);">
+                <img id="webLogoImg" src="https://tareqwavlgqoexxffuuc.supabase.co/storage/v1/object/sign/Logo_Website/Logo_Website/file_0000000018e071fab28396ba3dc0a65d.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kNWIxNTEyZS03YTE5LTQzY2UtYWUxNC00ZmRkNzMyZmIyODMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJMb2dvX1dlYnNpdGUvTG9dvX1dlYnNpdGUvZmlsZV8wMDAwMDAwMDE4ZTA3MWZhYjI4Mzk2YmEzZGMwYTY1ZC5wbmciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzgxNDU1MTcwLCJleHAiOjE4MTI5OTExNzB9.AAoSqVvE81Mxfw1Zcc9JGR-tm_TDGnM5lDB10S-2Oyo" alt="Logo AFI" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #66fcf1; box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);">
                 <div class="logo-wrapper">
                     <div class="logo-main">[AFI] ARMED FORCE INDONESIA</div>
                     <div class="logo-sub">MEDIA RAYA<span>.ID</span></div>
@@ -43,13 +54,15 @@
         <div class="nav-overlay" id="navOverlay">
             <button class="close-menu" onclick="toggleMenu()">×</button>
             <ul class="nav-links">
-                <li><a href="#" onclick="closeAllPortals()">Home</a></li>
+                <li><a href="#" onclick="showSection('mainPortal')">Home (Berita Utama)</a></li>
+                <li><a href="#" onclick="showSection('galleryPortal')">Galeri Foto Masa ke Masa</a></li>
+                <li><a href="#" onclick="showSection('sejarahPortal')">Sejarah AFI</a></li>
                 <li><a href="#" onclick="openUserAuthPortal()">Register/Login Member Komentar</a></li>
-                <li><a href="#" onclick="openAdminPortal()" class="special-btn">Login Portal Kontributor</a></li>
+                <li><a href="#" onclick="openAdminPortal()" class="special-btn">Portal Kontributor / Owner</a></li>
             </ul>
         </div>
 
-        <div class="container" id="mainPortal">
+        <div class="container visual-section" id="mainPortal">
             <div id="userSessionBadge" class="box-session hidden"></div>
 
             <div class="section-title">Main Story</div>
@@ -64,7 +77,24 @@
             </div>
         </div>
 
-        <div class="container hidden" id="userAuthPortal">
+        <div class="container visual-section hidden" id="galleryPortal">
+            <h1 class="gallery-main-title">DOKUMENTASI FOTO <br><span>DARI MASA KE MASA</span></h1>
+            <div class="gallery-grid" id="galleryGridContainer">
+                </div>
+        </div>
+
+        <div class="container visual-section hidden" id="sejarahPortal">
+            <div class="box">
+                <h1 class="sejarah-title">SEJARAH RESMI</h1>
+                <h3 class="sejarah-subtitle">[AFI] ARMED FORCE INDONESIA</h3>
+                <hr style="border-color: rgba(102,252,241,0.2); margin: 20px 0;">
+                <div id="sejarahContentContainer" class="sejarah-content">
+                    <p style="color:#64748b; text-align:center;">Memuat data narasi sejarah...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="container visual-section hidden" id="userAuthPortal">
             <div class="box">
                 <h2 id="authTitle" class="portal-title">Registrasi Akun Member</h2>
                 
@@ -80,11 +110,12 @@
                 <input type="password" id="authPassword" placeholder="Ketik Password Anda...">
 
                 <button id="authSubmitBtn" onclick="handleUserRegister()">Kirim Pengajuan Pendaftaran</button>
-                <button class="logout-btn" onclick="closeAllPortals()">Kembali ke Berita</button>
+                <button class="logout-btn" onclick="showSection('mainPortal')">Kembali ke Berita</button>
             </div>
         </div>
 
-        <div class="container hidden" id="adminPortal">
+        <div class="container visual-section hidden" id="adminPortal">
+            
             <div class="box" id="loginBox">
                 <h2 class="portal-title">Login Portal Kontributor</h2>
                 
@@ -112,93 +143,92 @@
                 
                 <button onclick="handleLogin()">Otentikasi Masuk</button>
                 <button id="biometricLoginBtn" class="hidden" onclick="loginWithBiometric()" style="background: linear-gradient(135deg, #00e676, #00b0ff); color: #000; font-weight: bold; margin-top: 5px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 230, 118, 0.4);">🔐 Masuk Menggunakan Sidik Jari</button>
-                <button class="logout-btn" onclick="closeAllPortals()">Kembali ke Berita</button>
+                <button class="logout-btn" onclick="showSection('mainPortal')">Kembali ke Berita</button>
             </div>
 
             <div class="box hidden" id="cmsBox">
                 <h2 id="cmsHeading" class="portal-title">Panel Kontrol Kontributor</h2>
                 
-                <div id="ownerControls" class="hidden" style="margin-bottom: 25px; padding: 20px; border: 1px solid rgba(255, 23, 68, 0.3); border-radius: 8px; background: rgba(31, 20, 20, 0.6); backdrop-filter: blur(10px);">
-                    <p style="font-size: 13px; color: #ff1744; margin-bottom: 15px; font-weight: bold; text-shadow: 0 0 10px rgba(255,23,68,0.5);">⚡ OWNER MASTER SYSTEM CONFIGURATION ACTIVE (@nathanael_0918)</p>
+                <div id="ownerControls" class="hidden owner-exclusive-card">
+                    <p class="owner-status-title">⚡ OWNER MASTER SYSTEM CONFIGURATION ACTIVE (@nathanael_0918)</p>
                     
-                    <div style="margin-bottom: 15px; background: rgba(62, 39, 35, 0.5); padding: 15px; border-radius: 6px; border: 1px solid #d84315; text-align: center;">
-                        <span style="font-size: 12px; font-weight: bold; color: #ffab40; display: block; margin-bottom: 10px; letter-spacing: 1px;">🚨 GLOBAL WEBSITE LOCKDOWN SYSTEM</span>
-                        <div style="display: flex; justify-content: center; gap: 10px;">
-                            <button id="maintenanceOnBtn" onclick="setMaintenanceMode(true)" style="background-color: #b71c1c; font-size: 12px; width: auto; margin:0; padding: 10px 15px;">AKTIFKAN MAINTENANCE ⛔</button>
-                            <button id="maintenanceOffBtn" onclick="setMaintenanceMode(false)" style="background-color: #2e7d32; font-size: 12px; width: auto; margin:0; padding: 10px 15px;">MATIKAN MAINTENANCE (NORMAL)</button>
-                        </div>
-                        <div id="maintenanceStatusLabel" style="font-size: 12px; font-weight: bold; color: #fff; margin-top: 10px;">Status: Memuat data...</div>
+                    <div class="rainbow-switch-box">
+                        <input type="checkbox" id="rainbowNameCheckbox" onchange="toggleRainbowStatus(this.checked)">
+                        <label for="rainbowNameCheckbox">🌈 AKTIFKAN AKSES EXCLUSIVE: NAMA OWNER RAINBOW ANIMATED</label>
                     </div>
 
-                    <div style="margin-bottom: 15px; background: rgba(26, 35, 126, 0.4); padding: 15px; border-radius: 6px; border: 1px solid rgba(63, 81, 181, 0.5);">
-                        <span style="font-size: 12px; font-weight: bold; color: #00e5ff; display: block; margin-bottom: 10px;">📩 NOTIFIKASI PERSETUJUAN MEMBER KOMENTAR</span>
-                        <div style="max-height: 150px; overflow-y: auto; font-size: 12px;">
-                            <table style="width: 100%; border-collapse: collapse;">
-                                <thead>
-                                    <tr style="color: #66fcf1; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left;">
-                                        <th style="padding: 6px;">User</th>
-                                        <th style="padding: 6px; text-align: center;">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="approvalListTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 15px; background: rgba(43, 43, 61, 0.4); padding: 15px; border-radius: 6px; border: 1px solid rgba(63, 63, 92, 0.5);">
-                        <span style="font-size: 12px; font-weight: bold; color: #00e676; display: block; margin-bottom: 12px;">🎛️ PENGATURAN GLOBAL WEBSITE (MASTER SETTINGS)</span>
+                    <div class="owner-grid-menu">
+                        <button class="btn-owner-grid btn-blue" onclick="openOwnerSubSection('ownerCmsSejarah')">Kelola Sejarah</button>
+                        <button class="btn-owner-grid btn-blue" onclick="openOwnerSubSection('ownerCmsGaleri')">Kelola Galeri Foto</button>
                         
-                        <label style="font-size: 12px;">URL Logo Website Baru</label>
-                        <input type="text" id="setWebLogo" placeholder="Tempel link URL gambar logo...">
+                        <button class="btn-owner-grid btn-teal" onclick="setupBiometric()">Atur Biometrik Perangkat 🔐</button>
+                        <button class="btn-owner-grid btn-teal" onclick="openOwnerSubSection('ownerCmsAdmin')">Tambah Akses Admin</button>
+                        
+                        <button class="btn-owner-grid btn-orange" onclick="toggleMaintenanceViaButton()">Status Lockdown: <span id="maintStatusBtnLabel">Memuat...</span></button>
+                        <button class="btn-owner-grid btn-red" onclick="openOwnerSubSection('ownerCmsGlobalWeb')">Pengaturan Global</button>
+                    </div>
 
-                        <label style="font-size: 12px;">URL Gambar Background Website</label>
-                        <input type="text" id="setWebBackground" placeholder="Tempel link URL gambar background...">
-
-                        <label style="font-size: 12px;">Link Musik Latar (Wajib Link YouTube Saja)</label>
-                        <input type="text" id="setWebMusic" placeholder="https://www.youtube.com/watch?v=...">
-
-                        <label style="font-size: 12px;">Kontrol Volume Musik Default</label>
-                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                            <input type="range" id="setWebVolume" min="0" max="100" value="50" style="margin-bottom: 0; cursor: pointer;">
-                            <span id="volumeValLabel" style="font-size: 13px; font-weight: bold; min-width: 40px; color: #66fcf1;">50%</span>
+                    <div class="owner-sub-content-area">
+                        
+                        <div id="ownerCmsSejarah" class="sub-owner-box hidden">
+                            <span class="sub-owner-title">✍ nighttime; UPDATE ISI HALAMAN SEJARAH WEBSITE</span>
+                            <textarea id="cmsSejarahInput" rows="5" placeholder="Ketik atau edit narasi sejarah lengkap di sini..."></textarea>
+                            <button onclick="saveSejarahToFirebase()" class="btn-action-save">Update Sejarah Resmi</button>
                         </div>
 
-                        <button onclick="saveGlobalSettings()" style="background: linear-gradient(135deg, #00e676, #00b0ff); color: #000; padding: 10px; font-size: 12px; margin-bottom: 0;">Simpan Pengaturan Utama</button>
-                    </div>
+                        <div id="ownerCmsGaleri" class="sub-owner-box hidden">
+                            <span class="sub-owner-title">📸 UPLOAD FOTO BARU KE GALERI (MASA KE MASA)</span>
+                            <input type="text" id="cmsGalleryImageUrl" placeholder="Tempel URL Link Gambar Foto...">
+                            <input type="text" id="cmsGalleryCaption" placeholder="Ketik deskripsi singkat / keterangan foto...">
+                            <button onclick="uploadPhotoToGallery()" class="btn-action-save">Unggah Foto Dokumentasi</button>
+                        </div>
 
-                    <div style="margin-bottom: 15px; background: rgba(43, 43, 27, 0.4); padding: 15px; border-radius: 6px; border: 1px solid rgba(92, 92, 20, 0.5);">
-                        <span style="font-size: 12px; font-weight: bold; color: #fff; display: block; margin-bottom: 10px;">☝️ KONFIGURASI BIOMETRIK (SIDIK JARI)</span>
-                        <button onclick="setupBiometric()" style="background: #f57f17; padding: 10px; font-size: 12px; margin-bottom: 0; color: #fff;">Daftarkan Sidik Jari Perangkat Ini</button>
-                    </div>
+                        <div id="ownerCmsAdmin" class="sub-owner-box hidden">
+                            <span class="sub-owner-title">🔒 TAMBAH AKSES MEDIA (REGISTER ADMIN BARU)</span>
+                            <input type="text" id="newAdminUser" placeholder="Ketik Username Baru..." style="margin-bottom: 8px;">
+                            <input type="password" id="newAdminPass" placeholder="Set Password Akun..." style="margin-bottom: 12px;">
+                            <button onclick="generateAdmin()" class="btn-action-save">Daftarkan & Beri Akses Admin</button>
+                            
+                            <span class="sub-owner-title" style="margin-top: 15px;">📋 MONITORING REALTIME AKSES LIST ADMIN</span>
+                            <div style="max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                                <table style="width: 100%; font-size: 11px; border-collapse: collapse; text-align: left;">
+                                    <tbody id="accessListTable"></tbody>
+                                </table>
+                            </div>
 
-                    <div style="margin-bottom: 15px; background: rgba(43, 27, 27, 0.4); padding: 15px; border-radius: 6px; border: 1px solid rgba(92, 20, 20, 0.5);">
-                        <span style="font-size: 12px; font-weight: bold; color: #fff; display: block; margin-bottom: 10px;">🔒 TAMBAH AKSES MEDIA (Register Admin Baru)</span>
-                        <input type="text" id="newAdminUser" placeholder="Ketik Username Baru..." style="margin-bottom: 8px; padding: 10px;">
-                        <input type="password" id="newAdminPass" placeholder="Set Password Akun..." style="margin-bottom: 12px; padding: 10px;">
-                        <button onclick="generateAdmin()" style="background-color: #2e7d32; padding: 10px; font-size: 12px; margin-bottom: 0;">Daftarkan & Beri Akses</button>
-                    </div>
+                            <span class="sub-owner-title" style="margin-top: 15px;">📩 NOTIFIKASI PERSETUJUAN MEMBER KOMENTAR BARU</span>
+                            <div style="max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                                <table style="width: 100%; font-size: 11px; border-collapse: collapse; text-align: left;">
+                                    <tbody id="approvalListTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
 
-                    <div style="margin-bottom: 15px; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
-                        <span style="font-size: 12px; font-weight: bold; color: #aaa; display: block; margin-bottom: 8px;">📋 AKSES LIST MONITORING & MANAGEMENT</span>
-                        <div style="max-height: 180px; overflow-y: auto;">
-                            <table style="width: 100%; font-size: 11px; border-collapse: collapse; text-align: left;">
-                                <thead style="background: #111; position: sticky; top: 0; color: #66fcf1;">
-                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                        <th style="padding: 6px;">Username</th>
-                                        <th style="padding: 6px;">Status</th>
-                                        <th style="padding: 6px; text-align: center;">Tindakan</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="accessListTable"></tbody>
-                            </table>
+                        <div id="ownerCmsGlobalWeb" class="sub-owner-box hidden">
+                            <span class="sub-owner-title">🎛️ PENGATURAN GLOBAL WEBSITE (MASTER SETTINGS)</span>
+                            <label style="font-size: 11px;">URL Logo Website Baru</label>
+                            <input type="text" id="setWebLogo" placeholder="Masukkan tautan link URL gambar logo...">
+
+                            <label style="font-size: 11px;">URL Gambar Background Website</label>
+                            <input type="text" id="setWebBackground" placeholder="Masukkan tautan link URL gambar background...">
+
+                            <label style="font-size: 11px;">Link Musik Latar (Wajib URL YouTube)</label>
+                            <input type="text" id="setWebMusic" placeholder="https://www.youtube.com/watch?v=...">
+
+                            <label style="font-size: 11px;">Kontrol Volume Musik Default</label>
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                                <input type="range" id="setWebVolume" min="0" max="100" value="50" style="margin-bottom: 0; cursor: pointer;">
+                                <span id="volumeValLabel" style="font-size: 13px; font-weight: bold; color: #66fcf1;">50%</span>
+                            </div>
+
+                            <button onclick="saveGlobalSettings()" class="btn-action-save">Simpan Semua Konfigurasi Global</button>
+                            <button onclick="clearAllNews()" class="btn-action-danger" style="margin-top: 15px; width: 100%;">Reset/Hapus Semua Berita di Halaman Utama</button>
                         </div>
                     </div>
-
-                    <button onclick="clearAllNews()" style="background-color: #b71c1c; font-size: 11px; padding: 8px; border-radius: 4px;">Reset/Hapus Semua Berita di Website</button>
                 </div>
 
-                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-                    <button onclick="switchCmsTab('news')" id="tabBtnNews" style="font-size: 13px; padding: 10px; border-radius: 6px;">Mode Berita</button>
+                <div style="margin-bottom: 20px; display: flex; gap: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                    <button onclick="switchCmsTab('news')" id="tabBtnNews" style="font-size: 13px; padding: 10px; border-radius: 6px;">Mode Berita Utama</button>
                     <button onclick="switchCmsTab('announcement')" id="tabBtnAnnounce" style="font-size: 13px; padding: 10px; background: rgba(255,255,255,0.05); color:#aaa; border-radius: 6px;">Mode Announcement</button>
                 </div>
 
@@ -207,32 +237,32 @@
                     <input type="text" id="postTitle" placeholder="Ketik judul berita utama...">
                     
                     <label>URL Link Foto Berita</label>
-                    <input type="text" id="postImage" placeholder="https://link-gambar.jpg">
+                    <input type="text" id="postImage" placeholder="https://link-gambar-berita.jpg">
                     
-                    <label>Isi Berita</label>
-                    <textarea id="postContent" rows="5" placeholder="Tulis rincian berita lengkap..."></textarea>
+                    <label>Isi Berita Lengkap</label>
+                    <textarea id="postContent" rows="5" placeholder="Tulis rincian narasi berita lengkap..."></textarea>
                 </div>
 
                 <div id="formAnnounceGroup" class="hidden">
                     <label>Judul Pengumuman (Announcement)</label>
-                    <input type="text" id="announceTitle" placeholder="PENGUMUMAN / INFO PENTING...">
+                    <input type="text" id="announceTitle" placeholder="PENGUMUMAN / INFO SINGKAT PENTING...">
                     
                     <label>Detail Pesan Pengumuman</label>
-                    <textarea id="announceContent" rows="5" placeholder="Ketik pesan pengumuman..."></textarea>
+                    <textarea id="announceContent" rows="5" placeholder="Ketik pesan pengumuman penting..."></textarea>
                 </div>
 
                 <div style="margin: 20px 0; display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
                     <input type="checkbox" id="tagRoleCheckbox" style="width: auto; margin-bottom: 0; cursor: pointer;" checked>
                     <label for="tagRoleCheckbox" style="display: inline; font-size: 13px; color: #fff; cursor: pointer; user-select: none; margin-bottom:0;">
-                        Sebut/Tag Role Anggota Discord
+                        Sebut/Tag Role Anggota di Saluran Discord
                     </label>
                 </div>
 
                 <label>Identitas Penulis Aktif</label>
                 <input type="text" id="postAuthor" readonly style="background-color: rgba(0,0,0,0.3); color: #66fcf1; font-weight: bold; border-color: rgba(102,252,241,0.2);">
                 
-                <button onclick="executePublish()" style="background: linear-gradient(135deg, #2e7d32, #43a047); color: #fff; box-shadow: 0 4px 15px rgba(46,125,50,0.3);" id="publishSubmitBtn">Publish Berita & Kirim ke Discord</button>
-                <button class="logout-btn" onclick="handleLogout()">Keluar Admin</button>
+                <button onclick="executePublish()" style="background: linear-gradient(135deg, #2e7d32, #43a047); color: #fff; box-shadow: 0 4px 15px rgba(46,125,50,0.3);" id="publishSubmitBtn">Publish Konten & Kirim Notifikasi Discord</button>
+                <button class="logout-btn" onclick="handleLogout()">Keluar Panel Kontributor</button>
             </div>
         </div>
 
@@ -248,3 +278,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+    
