@@ -33,17 +33,15 @@
         <div class="nav-overlay" id="navOverlay">
             <button class="close-menu" onclick="toggleMenu()">×</button>
             <ul class="nav-links">
-                <li><a href="#" onclick="closeAdminPortal()">Home</a></li>
-                <li><a href="#">Berita</a></li>
-                <li><a href="#">Acara</a></li>
-                <li><a href="#">Gallery</a></li>
-                <li><a href="#">Trending</a></li>
-                <li><a href="#">About</a></li>
+                <li><a href="#" onclick="closeAllPortals()">Home</a></li>
+                <li><a href="#" onclick="openUserAuthPortal()">Register/Login Member Komentar</a></li>
                 <li><a href="#" onclick="openAdminPortal()" class="special-btn">Login Portal Kontributor</a></li>
             </ul>
         </div>
 
         <div class="container" id="mainPortal">
+            <div id="userSessionBadge" class="box-session hidden"></div>
+
             <div class="section-title">Main Story</div>
             <div id="newsContainer">
                 <p style="text-align: center; color: #666;">Menghubungkan ke server Firebase...</p>
@@ -53,6 +51,26 @@
                 <a href="https://discord.gg/Ru2N9tCSDy" target="_blank" class="discord-btn">
                     <span>➔</span> Bergabung dengan Discord Resmi Kami
                 </a>
+            </div>
+        </div>
+
+        <div class="container hidden" id="userAuthPortal">
+            <div class="box">
+                <h2 id="authTitle">Registrasi Akun Member</h2>
+                
+                <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+                    <button onclick="switchAuthMode('register')" id="tabReg" style="font-size: 13px; padding: 8px; background: #e53935;">Daftar Baru</button>
+                    <button onclick="switchAuthMode('login')" id="tabLog" style="font-size: 13px; padding: 8px; background: #444;">Login Member</button>
+                </div>
+
+                <label>Username</label>
+                <input type="text" id="authUsername" placeholder="Ketik Username Anda...">
+
+                <label>Password</label>
+                <input type="password" id="authPassword" placeholder="Ketik Password Anda...">
+
+                <button id="authSubmitBtn" onclick="handleUserRegister()">Kirim Pengajuan Pendaftaran</button>
+                <button class="logout-btn" onclick="closeAllPortals()">Kembali ke Berita</button>
             </div>
         </div>
 
@@ -84,7 +102,7 @@
                 
                 <button onclick="handleLogin()">Otentikasi Masuk</button>
                 <button id="biometricLoginBtn" class="hidden" onclick="loginWithBiometric()" style="background-color: #00e676; color: #000; font-weight: bold; margin-top: -5px; margin-bottom: 15px;">🔐 Masuk Menggunakan Sidik Jari</button>
-                <button class="logout-btn" onclick="closeAdminPortal()">Kembali ke Berita</button>
+                <button class="logout-btn" onclick="closeAllPortals()">Kembali ke Berita</button>
             </div>
 
             <div class="box hidden" id="cmsBox">
@@ -93,6 +111,22 @@
                 <div id="ownerControls" class="hidden" style="margin-bottom: 20px; padding: 15px; border: 2px solid #b71c1c; border-radius: 6px; background-color: #1f1414;">
                     <p style="font-size: 13px; color: #ff1744; margin-bottom: 12px; font-weight: bold;">⚡ OWNER MASTER SYSTEM CONFIGURATION ACTIVE (@nathanael_0918)</p>
                     
+                    <div style="margin-bottom: 15px; background: #1a237e; padding: 12px; border-radius: 4px; border: 1px solid #3f51b5;">
+                        <span style="font-size: 12px; font-weight: bold; color: #00e5ff; display: block; margin-bottom: 8px;">📩 NOTIFIKASI PERSETUJUAN MEMBER KOMENTAR</span>
+                        <div style="max-height: 150px; overflow-y: auto; font-size: 12px;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="color: #bbb; border-bottom: 1px solid #444;">
+                                        <th style="padding: 4px;">User</th>
+                                        <th style="padding: 4px; text-align: center;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="approvalListTable">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <div style="margin-bottom: 15px; background: #2b2b3d; padding: 12px; border-radius: 4px; border: 1px solid #3f3f5c;">
                         <span style="font-size: 12px; font-weight: bold; color: #00e676; display: block; margin-bottom: 10px;">🎛️ PENGATURAN GLOBAL WEBSITE (MASTER SETTINGS)</span>
                         
@@ -102,8 +136,8 @@
                         <label style="font-size: 12px;">URL Gambar Background Website</label>
                         <input type="text" id="setWebBackground" placeholder="Tempel link URL gambar background...">
 
-                        <label style="font-size: 12px;">Link Musik Latar (YouTube / Spotify Share Link)</label>
-                        <input type="text" id="setWebMusic" placeholder="https://www.youtube.com/watch?v=... atau link spotify">
+                        <label style="font-size: 12px;">Link Musik Latar (Wajib Link YouTube Saja)</label>
+                        <input type="text" id="setWebMusic" placeholder="https://www.youtube.com/watch?v=...">
 
                         <label style="font-size: 12px;">Kontrol Volume Musik Default</label>
                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
@@ -186,10 +220,8 @@
         </div>
 
         <footer>
-            <p>&copy; 2026 <strong>[AFI] ARMED FORCE INDONESIA</strong>. All Rights Reserved.</p>
+            <p>© 2026 <strong>[AFI] ARMED FORCE INDONESIA</strong>. All Rights Reserved.</p>
             <p>Development Website: <span class="owner-tag">@nathanael_0918</span></p>
-            <p>Founder of Website: <span class="owner-tag">@nathanael_0918</span></p>
-            <p>Programmer of Website: <span class="owner-tag">@nathanael_0918</span></p>
         </footer>
     </div>
 
