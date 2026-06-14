@@ -1,0 +1,147 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #121212;
+    color: #ffffff;
+    background-image: linear-gradient(rgba(18, 18, 18, 0.95), rgba(18, 18, 18, 0.95));
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+/* Header & Navbar */
+header {
+    background-color: #1a1a1a;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #e53935;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+/* Bungkus Struktur Susunan Logo Tiga Tingkat */
+.logo-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.2;
+}
+
+/* Baris Atas: Tulisan Tebal Putih */
+.logo-main {
+    font-weight: 800;
+    font-size: 18px;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Baris Tengah: Nama Sub-Media */
+.logo-sub {
+    font-weight: 600;
+    font-size: 13px;
+    color: #b0b0b0;
+    letter-spacing: 1px;
+    margin-top: 2px;
+}
+
+.logo-sub span {
+    color: #e53935;
+}
+
+/* Baris Bawah: Pengelola */
+.logo-managed {
+    font-size: 10px;
+    color: #777777;
+    font-style: italic;
+    margin-top: 1px;
+}
+
+.menu-toggle {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Overlay Menu Mobile */
+.nav-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(18, 18, 18, 0.98);
+    z-index: 2000; display: none; flex-direction: column; align-items: center; padding-top: 50px;
+}
+.close-menu { position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 30px; cursor: pointer; }
+.nav-links { list-style: none; text-align: center; width: 80%; max-width: 400px; }
+.nav-links li { margin: 20px 0; border-bottom: 1px solid #333; padding-bottom: 10px; }
+.nav-links a { color: #e53935; text-decoration: none; font-weight: bold; font-size: 20px; text-transform: uppercase; }
+.special-btn { background-color: #e53935; color: white !important; padding: 10px 20px; border-radius: 5px; display: inline-block; margin-top: 20px; width: 100%; }
+
+/* Main Content */
+.container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+.section-title { background: #222; padding: 10px; border-left: 5px solid #e53935; margin-bottom: 20px; font-size: 20px; }
+
+/* Card Berita & Badges */
+.news-card { background-color: #1a1a1a; border: 1px solid #333; border-radius: 4px; overflow: hidden; margin-bottom: 25px; }
+.news-img { width: 100%; height: auto; display: block; object-fit: cover; max-height: 450px; }
+.news-meta { padding: 15px 15px 5px 15px; font-size: 13px; color: #aaa; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.news-title { padding: 0 15px 10px 15px; font-size: 22px; font-weight: bold; line-height: 1.4; color: #fff; }
+.news-content { padding: 0 15px 20px 15px; color: #ccc; line-height: 1.6; font-size: 15px; white-space: pre-line; }
+
+/* Lencana/Tag Khusus Identitas Penulis */
+.badge { padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+.badge-dispenad { background-color: #1b5e20; color: #fff; border: 1px solid #4caf50; }
+.badge-owner { background-color: #b71c1c; color: #fff; border: 1px solid #ff1744; }
+.badge-admin { background-color: #333; color: #fff; border: 1px solid #555; }
+
+/* Form Login & CMS */
+.box { background: #1a1a1a; max-width: 500px; margin: 30px auto; padding: 25px; border-radius: 8px; border: 1px solid #333; }
+.box h2 { border-bottom: 2px solid #e53935; padding-bottom: 10px; margin-bottom: 20px; font-size: 20px; }
+.box label { display: block; margin-bottom: 6px; font-size: 14px; color: #ccc; font-weight: 600; }
+.box input, .box textarea, .box button, .box select { width: 100%; padding: 12px; margin-bottom: 15px; background: #222; border: 1px solid #404040; color: #fff; border-radius: 4px; }
+.box input:focus, .box textarea:focus, .box select:focus { border-color: #e53935; outline: none; }
+.box button { background: #e53935; font-weight: bold; cursor: pointer; border: none; transition: background 0.2s; }
+.box button:hover { background: #b71c1c; }
+.box .logout-btn { background: #444; margin-top: 5px; }
+.box .logout-btn:hover { background: #333; }
+.hidden { display: none !important; }
+
+/* Tabel Monitor Admin */
+table th, table td { padding: 6px; border-bottom: 1px solid #222; vertical-align: middle; }
+
+/* Tombol Hubungkan Sosial Media Discord */
+.discord-section { text-align: center; margin: 30px 0; }
+.discord-btn {
+    background-color: #5865F2; color: white !important;
+    padding: 12px 25px; font-weight: bold; text-decoration: none;
+    border-radius: 5px; display: inline-flex; align-items: center; gap: 10px;
+    font-size: 16px; border: none; transition: background 0.3s;
+}
+.discord-btn:hover { background-color: #4752c4; }
+
+/* Footer Credits & Owner Info */
+footer {
+    background-color: #141414; text-align: center;
+    padding: 25px 15px; margin-top: 50px;
+    border-top: 1px solid #222; font-size: 13px; color: #777; line-height: 1.8;
+}
+footer strong { color: #fff; }
+.owner-tag { color: #e53935; font-weight: bold; }
+
+/* Screen Blocker Khusus Geofence */
+#geoBlocker {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: #050505; color: #ffffff; z-index: 99999;
+    display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center;
+}
+#geoBlocker h1 { color: #e53935; margin-bottom: 15px; font-size: 26px; }
+#geoBlocker p { max-width: 500px; line-height: 1.6; font-size: 15px; color: #ccc; }
+
