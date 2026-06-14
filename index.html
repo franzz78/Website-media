@@ -14,7 +14,7 @@
     <div id="notificationBanner" class="notification-banner">
         <div class="notification-content">
             <span class="bell-icon">🔔</span>
-            <p><strong>Aktifkan notifikasi</strong> untuk mendapat kabar terbaru dari MEDIA RAYA NEWS.ID</p>
+            <p><strong>Aktifkan notifikasi</strong> untuk mendapat kabar terbaru dari Lintaraya News</p>
         </div>
         <div class="notification-actions">
             <button class="btn-noti-active" onclick="acceptNotification()">Aktifkan</button>
@@ -25,13 +25,12 @@
     <div id="maintenanceBlocker" class="hidden">
         <div class="maintenance-box">
             <div class="maintenance-icon">⛔</div>
-            <h1>SERVER WEBSITE MAINTENANCE 100% ⛔</h1>
-            <p>Maaf, website saat ini sedang dalam perbaikan massal dan pembaruan sistem oleh Management AFI.</p>
-            <p style="color: #aaa; font-size: 13px;">Seluruh akses publik, kontributor, dan divisi dinas dialihkan sementara.</p>
+            <h1 class="lockdown-title">AKSES DITUTUP</h1>
+            <p class="lockdown-subtitle">TUNGGU INFORMASI SELANJUTNYA DI SERVER DISCORD</p>
             
-            <div class="owner-bypass-area">
-                <label>Akses Khusus Bypass Owner Raya</label>
-                <input type="password" id="maintenanceBypassPass" placeholder="Masukkan Password Owner...">
+            <div class="owner-bypass-area" style="margin-top: 30px;">
+                <label>Bypass Master Akses Owner Only</label>
+                <input type="password" id="maintenanceBypassPass" placeholder="Masukkan Password Master...">
                 <button onclick="bypassMaintenanceMode()">Buka Akses Master</button>
             </div>
         </div>
@@ -41,7 +40,7 @@
         
         <header>
             <div class="logo-area" style="display: flex; align-items: center; gap: 15px;">
-                <img id="webLogoImg" src="https://tareqwavlgqoexxffuuc.supabase.co/storage/v1/object/sign/Logo_Website/Logo_Website/file_0000000018e071fab28396ba3dc0a65d.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kNWIxNTEyZS03YTE5LTQzY2UtYWUxNC00ZmRkNzMyZmIyODMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJMb2dvX1dlYnNpdGUvTG9nb19XZWJzaXRlL2ZpbGVfMDAwMDAwMDAxOGUwNzFmYWIyODM5NmJhM2RjMGE2NWQucG5nIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4MTQ2NjUzMiwiZXhwIjoxODEzMDAyNTMyfQ.Oi14S7m0QMtFYoU1LU2yOoxMOustzs9cqijeihLcGfQ" alt="Logo_Wesite" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #66fcf1; box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);">
+                <img id="webLogoImg" src="https://tareqwavlgqoexxffuuc.supabase.co/storage/v1/object/sign/Logo_Website/Logo_Website/file_0000000018e071fab28396ba3dc0a65d.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kNWIxNTEyZS03YTE5LTQzY2UtYWUxNC00ZmRkNzMyZmIyODMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJMb2dvX1dlYnNpdGUvTG9nb19XZWJzaXRlL2ZpbGVfMDAwMDAwMDAxOGUwNzFmYWIyODM5NmJhM2RjMGE2NWQucG5nIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4MTQ2NjUzMiwiZXhwIjoxODEzMDAyNTMyfQ.Oi14S7m0QMtFYoU1LU2yOoxMOustzs9cqijeihLcGfQ" alt="Logo AFI" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #66fcf1; box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);">
                 <div class="logo-wrapper">
                     <div class="logo-main">[AFI] ARMED FORCE INDONESIA</div>
                     <div class="logo-sub">MEDIA RAYA<span>.ID</span></div>
@@ -67,7 +66,7 @@
 
             <div class="section-title">Main Story</div>
             <div id="newsContainer">
-                <p style="text-align: center; color: #66fcf1; animation: pulse 1s infinite alternate;">Menghubungkan ke server Firebase...</p>
+                <p style="text-align: center; color: #66fcf1;">Menghubungkan ke server Firebase...</p>
             </div>
             
             <div class="discord-section">
@@ -160,18 +159,22 @@
                     <div class="owner-grid-menu">
                         <button class="btn-owner-grid btn-blue" onclick="openOwnerSubSection('ownerCmsSejarah')">Kelola Sejarah</button>
                         <button class="btn-owner-grid btn-blue" onclick="openOwnerSubSection('ownerCmsGaleri')">Kelola Galeri Foto</button>
-                        
                         <button class="btn-owner-grid btn-teal" onclick="setupBiometric()">Atur Biometrik Perangkat 🔐</button>
                         <button class="btn-owner-grid btn-teal" onclick="openOwnerSubSection('ownerCmsAdmin')">Tambah Akses Admin</button>
                         
-                        <button class="btn-owner-grid btn-orange" onclick="toggleMaintenanceViaButton()">Status Lockdown: <span id="maintStatusBtnLabel">Memuat...</span></button>
+                        <button class="btn-owner-grid btn-blue" onclick="openOwnerSubSection('ownerCmsStrukturTni')">Struktur Anggota TNI 🪖</button>
                         <button class="btn-owner-grid btn-red" onclick="openOwnerSubSection('ownerCmsGlobalWeb')">Pengaturan Global</button>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px;">
+                        <button onclick="executeLockdownOpen()" style="background-color: #2e7d32; color: #ffffff; padding: 14px; font-size: 11.5px; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(46,125,50,0.25);">🔓 AKSES DIBUKA</button>
+                        <button onclick="executeLockdownClose()" style="background-color: #b71c1c; color: #ffffff; padding: 14px; font-size: 11.5px; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(183,28,28,0.25);">⛔ AKSES DITUTUP</button>
                     </div>
 
                     <div class="owner-sub-content-area">
                         
                         <div id="ownerCmsSejarah" class="sub-owner-box hidden">
-                            <span class="sub-owner-title">✍ nighttime; UPDATE ISI HALAMAN SEJARAH WEBSITE</span>
+                            <span class="sub-owner-title">✍️ UPDATE ISI HALAMAN SEJARAH WEBSITE</span>
                             <textarea id="cmsSejarahInput" rows="5" placeholder="Ketik atau edit narasi sejarah lengkap di sini..."></textarea>
                             <button onclick="saveSejarahToFirebase()" class="btn-action-save">Update Sejarah Resmi</button>
                         </div>
@@ -195,12 +198,50 @@
                                     <tbody id="accessListTable"></tbody>
                                 </table>
                             </div>
+                        </div>
 
-                            <span class="sub-owner-title" style="margin-top: 15px;">📩 NOTIFIKASI PERSETUJUAN MEMBER KOMENTAR BARU</span>
-                            <div style="max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
-                                <table style="width: 100%; font-size: 11px; border-collapse: collapse; text-align: left;">
-                                    <tbody id="approvalListTable"></tbody>
-                                </table>
+                        <div id="ownerCmsStrukturTni" class="sub-owner-box hidden">
+                            <span class="sub-owner-title">🪖 STRUKTUR ORGANISASI JABATAN ANGGOTA TNI [AFI]</span>
+                            
+                            <div class="tni-structure-container">
+                                <div class="tni-row-flex">
+                                    <div class="tni-card">
+                                        <div class="tni-photo-frame"><img src="https://via.placeholder.com/100x120/222/fff?text=Foto" alt="Panglima Besar"></div>
+                                        <div class="tni-role">Panglima Besar TNI</div>
+                                        <div class="tni-name">Nama: ____________________</div>
+                                    </div>
+                                    <div class="tni-card">
+                                        <div class="tni-photo-frame"><img src="https://via.placeholder.com/100x120/222/fff?text=Foto" alt="Wakil Panglima Besar"></div>
+                                        <div class="tni-role">Wakil Panglima Besar TNI</div>
+                                        <div class="tni-name">Nama: ____________________</div>
+                                    </div>
+                                </div>
+
+                                <div class="tni-row-flex">
+                                    <div class="tni-card">
+                                        <div class="tni-photo-frame"><img src="https://via.placeholder.com/100x120/222/fff?text=Foto" alt="KASAD"></div>
+                                        <div class="tni-role">KASAD</div>
+                                        <div class="tni-name">Nama: ____________________</div>
+                                    </div>
+                                    <div class="tni-card">
+                                        <div class="tni-photo-frame"><img src="https://via.placeholder.com/100x120/222/fff?text=Foto" alt="WAKASAD"></div>
+                                        <div class="tni-role">WAKASAD</div>
+                                        <div class="tni-name">Nama: ____________________</div>
+                                    </div>
+                                </div>
+
+                                <div class="tni-row-flex">
+                                    <div class="tni-card">
+                                        <div class="tni-photo-frame"><img src="https://via.placeholder.com/100x120/222/fff?text=Foto" alt="ADC PANGBES"></div>
+                                        <div class="tni-role">ADC PANGBES</div>
+                                        <div class="tni-name">Nama: ____________________</div>
+                                    </div>
+                                    <div class="tni-card">
+                                        <div class="tni-photo-frame"><img src="https://via.placeholder.com/100x120/222/fff?text=Foto" alt="ADC KASAD"></div>
+                                        <div class="tni-role">ADC KASAD</div>
+                                        <div class="tni-name">Nama: ____________________</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -278,4 +319,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-    
