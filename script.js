@@ -22,33 +22,45 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 let currentCmsTab = "news"; 
 let currentAuthMode = "register";
-let isOwnerBypassed = false; // Flag status bypass maintenance lokal perangkat Owner
+let isOwnerBypassed = false; 
 
 // =========================================================================
-// 2. SISTEM REALTIME MAINTENANCE & GEOLOCATION
+// 2. INISIALISASI WEBSITE LANGSUNG (BEBAS GPS / INSTAN SELURUH INDONESIA)
 // =========================================================================
-const BLACKLIST_REGIONS = [
-    "batam", "kepulauan riau", "kepri", "papua", "papua barat", "papua selatan", 
-    "papua tengah", "papua pegunungan", "papua barat daya", "nusa tenggara timur", 
-    "ntt", "nusa tenggara barat", "ntb", "maluku", "maluku utara", "aceh"
-];
+function initWebsiteDirectly() {
+    // 1. Dengarkan status maintenance mode global
+    listenToMaintenanceMode();
 
-// MENDENGARKAN STATUS LOCKDOWN MAINTENANCE DARI FIREBASE SECARA REALTIME
+    // 2. Langsung buka interface utama website
+    const appContainer = document.getElementById('appContainer');
+    if (appContainer) {
+        appContainer.classList.remove('hidden');
+    }
+
+    // 3. Muat seluruh relasi fungsional dari Firebase
+    loadNewsFromFirebase();
+    listenToAccessList(); 
+    listenToGlobalSettings();
+    listenToApprovalList(); 
+    startRealtimeSecurityCheck(); 
+    checkActiveUserSession(); 
+}
+
+// =========================================================================
+// 3. SISTEM REALTIME MAINTENANCE MODE
+// =========================================================================
 function listenToMaintenanceMode() {
     database.ref('maintenance_status').on('value', (snapshot) => {
         const isMaintenance = snapshot.val() || false;
         const mBlocker = document.getElementById('maintenanceBlocker');
         const statusLabel = document.getElementById('maintenanceStatusLabel');
 
-        // Update teks status di panel internal owner
         if (statusLabel) {
             statusLabel.innerText = isMaintenance ? "Status: AKTIF (Website Terkunci Massal)" : "Status: MATI (Website Normal Publik)";
             statusLabel.style.color = isMaintenance ? "#ff1744" : "#00e676";
         }
 
-        // Jalankan proteksi penguncian
         if (isMaintenance) {
-            // Jika yang mengakses adalah owner yang sudah menembus bypass, abaikan blocker
             if (sessionStorage.getItem("roleActive") === "owner" || isOwnerBypassed) {
                 mBlocker.classList.add('hidden');
             } else {
@@ -56,30 +68,26 @@ function listenToMaintenanceMode() {
             }
         } else {
             mBlocker.classList.add('hidden');
-            isOwnerBypassed = false; // reset status bypass saat perbaikan selesai
+            isOwnerBypassed = false; 
         }
     });
 }
 
-// Fungsi sakelar pengubah kondisi maintenance oleh owner
 function setMaintenanceMode(status) {
     database.ref('maintenance_status').set(status).then(() => {
         alert(status ? "WEBSITE BERHASIL DIKUNCI MASAL (MAINTENANCE AKTIF)!" : "WEBSITE KEMBALI NORMAL UNTUK PUBLIK!");
     });
 }
 
-// Fungsi tombol tembus rahasia untuk owner di halaman blocker
 function bypassMaintenanceMode() {
     const enteredPass = document.getElementById('maintenanceBypassPass').value;
     if (enteredPass === OWNER_PASSWORD) {
         alert("Bypass Diterima! Selamat Datang Owner. Membuka gerbang utama...");
         isOwnerBypassed = true;
         
-        // Langsung arahkan secara otomatis ke panel admin login owner
         document.getElementById('maintenanceBlocker').classList.add('hidden');
         openAdminPortal();
         
-        // Isi otomatis form login untuk mempermudah owner masuk panel
         document.getElementById('loginType').value = 'owner';
         toggleLoginFields();
         document.getElementById('usernameInput').value = OWNER_USERNAME;
@@ -87,72 +95,6 @@ function bypassMaintenanceMode() {
     } else {
         alert("Password salah! Akses bypass ditolak keras.");
     }
-}
-
-function checkLocation() {
-    // Jalankan pengecekan status maintenance terlebih dahulu sebelum validasi GPS
-    listenToMaintenanceMode();
-
-    if (!navigator.geolocation) {
-        showBlocker("TIDAK BISA MENGAKSES WEBSITE", "Browser Anda tidak memiliki fitur GPS.");
-        return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-
-            if (lat < -11.0 || lat > 6.0 || lng < 95.0 || lng > 141.0) {
-                showBlocker("AKSES DITOLAK", "Layanan hanya tersedia di area domestik Indonesia.");
-                return;
-            }
-
-            const geoApiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`;
-
-            fetch(geoApiUrl, { headers: { 'User-Agent': 'MediaRayaID/1.0' } })
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.address) {
-                    const city = (data.address.city || data.address.city_district || data.address.county || data.address.municipality || "").toLowerCase();
-                    const state = (data.address.state || "").toLowerCase();
-
-                    const isRestricted = BLACKLIST_REGIONS.some(region => city.includes(region) || state.includes(region));
-
-                    if (isRestricted) {
-                        showBlocker("AKSES DITOLAK", "Wilayah administrasi Anda berada di luar batas izin operasional.");
-                    } else {
-                        document.getElementById('geoBlocker').classList.add('hidden');
-                        document.getElementById('appContainer').classList.remove('hidden');
-                        loadNewsFromFirebase();
-                        listenToAccessList(); 
-                        listenToGlobalSettings();
-                        listenToApprovalList(); 
-                        startRealtimeSecurityCheck(); 
-                        checkActiveUserSession(); 
-                    }
-                } else { showBlocker("GAGAL OTENTIKASI", "Gagal memproses nama wilayah."); }
-            })
-            .catch(() => { 
-                // DIUBAH: Jika masalah jaringan/API lambat, tampilkan animasi loading spinner secara terus menerus
-                const blocker = document.getElementById('geoBlocker');
-                blocker.classList.remove('hidden');
-                blocker.innerHTML = `
-                    <div class="spinner"></div>
-                    <h1 style="font-size: 18px; letter-spacing: 1px;">MENGOPTIMALKAN JARKOM...</h1>
-                    <p style="color: #888;">Koneksi ke server satelit sedikit lambat. Harap tunggu sebentar...</p>
-                `;
-            });
-        },
-        () => { showBlocker("GPS WAJIB AKTIF", "Anda wajib mengaktifkan izin GPS Lokasi untuk masuk."); },
-        { enableHighAccuracy: true, timeout: 15000 }
-    );
-}
-
-function showBlocker(title, message) {
-    const blocker = document.getElementById('geoBlocker');
-    blocker.classList.remove('hidden');
-    blocker.innerHTML = `<h1>${title}</h1><p>${message}</p>`;
 }
 
 function startRealtimeSecurityCheck() {
@@ -164,8 +106,8 @@ function startRealtimeSecurityCheck() {
             database.ref('whitelist_admins/' + currentAdmin.toLowerCase()).once('value', (snapshot) => {
                 if (!snapshot.exists()) {
                     sessionStorage.clear();
-                    document.getElementById('appContainer').classList.add('hidden');
-                    showBlocker("TIDAK ADA AKSES ADMIN", "Maaf, akun Anda telah dihapus atau dicabut izin aksesnya oleh Owner.");
+                    alert("Akses Anda telah dicabut oleh Owner!");
+                    window.location.reload();
                 }
             });
         }
@@ -173,7 +115,7 @@ function startRealtimeSecurityCheck() {
 }
 
 // =========================================================================
-// 3. MASTER SETTINGS & AUDIO ENGINE (AUTOPLAY YOUTUBE)
+// 4. MASTER SETTINGS & AUDIO ENGINE
 // =========================================================================
 function listenToGlobalSettings() {
     database.ref('global_settings').on('value', (snapshot) => {
@@ -221,9 +163,7 @@ function saveGlobalSettings() {
     const musicUrl = document.getElementById('setWebMusic').value.trim();
     const volume = document.getElementById('setWebVolume').value;
 
-    const settingsData = { logoUrl, backgroundUrl, musicUrl, volume };
-
-    database.ref('global_settings').set(settingsData)
+    database.ref('global_settings').set({ logoUrl, backgroundUrl, musicUrl, volume })
     .then(() => { alert("PENGATURAN GLOBAL SUKSES DISIMPAN!"); })
     .catch(err => alert("Gagal menyimpan: " + err.message));
 }
@@ -243,7 +183,7 @@ document.addEventListener('click', () => {
 }, { once: true });
 
 // =========================================================================
-// 4. PORTAL AUTENTIKASI MEMBER KOMENTAR
+// 5. PORTAL AUTENTIKASI MEMBER KOMENTAR
 // =========================================================================
 function openUserAuthPortal() {
     document.getElementById('navOverlay').style.display = 'none';
@@ -252,7 +192,6 @@ function openUserAuthPortal() {
     document.getElementById('userAuthPortal').classList.remove('hidden');
 }
 
-/* Memperbaiki pemanggilan penutupan agar sinkron */
 function closeAllPortals() {
     document.getElementById('userAuthPortal').classList.add('hidden');
     document.getElementById('adminPortal').classList.add('hidden');
@@ -285,16 +224,12 @@ function handleUserRegister() {
     if (currentAuthMode === 'register') {
         database.ref('comment_users/' + username.toLowerCase()).once('value', (snap) => {
             if (snap.exists()) {
-                alert("Username tersebut sudah terdaftar/sedang dalam proses review!");
+                alert("Username tersebut sudah terdaftar!");
             } else {
                 database.ref('comment_users/' + username.toLowerCase()).set({
-                    username: username,
-                    password: password,
-                    status: 'pending',
-                    commentCount: 5,
-                    lastResetTime: Date.now()
+                    username: username, password: password, status: 'pending', commentCount: 5, lastResetTime: Date.now()
                 }).then(() => {
-                    alert("Pendaftaran berhasil diajukan! Menunggu persetujuan Owner di menu Panel.");
+                    alert("Pendaftaran diajukan! Menunggu persetujuan Owner.");
                     document.getElementById('authUsername').value = "";
                     document.getElementById('authPassword').value = "";
                 });
@@ -303,14 +238,11 @@ function handleUserRegister() {
     } else {
         database.ref('comment_users/' + username.toLowerCase()).once('value', (snap) => {
             if (snap.exists() && snap.val().password === password) {
-                const userData = snap.val();
-                localStorage.setItem("member_username", userData.username);
+                localStorage.setItem("member_username", snap.val().username);
                 alert("Login Member Sukses!");
                 checkActiveUserSession();
                 closeAllPortals();
-            } else {
-                alert("Username atau Password Member salah!");
-            }
+            } else { alert("Username atau Password salah!"); }
         });
     }
 }
@@ -323,33 +255,21 @@ function checkActiveUserSession() {
         database.ref('comment_users/' + memberUser.toLowerCase()).on('value', (snap) => {
             if(!snap.exists()) { logoutMember(); return; }
             const u = snap.val();
-            
             let sisaKomentar = u.commentCount;
-            let statusTeks = u.status === 'approved' ? '🚀 VERIFIED MEMBER (Bebas Komentar)' : (u.status === 'rejected' ? '⚠️ DITOLAK (Limit Mode Aktif)' : '⏳ PENDING REVIEW');
+            let statusTeks = u.status === 'approved' ? '🚀 VERIFIED MEMBER' : (u.status === 'rejected' ? '⚠️ LIMIT MODE ACTIVE' : '⏳ PENDING REVIEW');
             
             if (u.status !== 'approved') {
                 const waktuSekarang = Date.now();
-                const selisihWaktu = waktuSekarang - u.lastResetTime;
-                
-                if (selisihWaktu >= 6 * 60 * 1000) {
+                if (waktuSekarang - u.lastResetTime >= 6 * 60 * 1000) {
                     sisaKomentar = 5;
-                    database.ref('comment_users/' + memberUser.toLowerCase()).update({
-                        commentCount: 5,
-                        lastResetTime: waktuSekarang
-                    });
+                    database.ref('comment_users/' + memberUser.toLowerCase()).update({ commentCount: 5, lastResetTime: waktuSekarang });
                 }
-                statusTeks += ` | Sisa Kuota: [${sisaKomentar}/5]`;
+                statusTeks += ` | Kuota: [${sisaKomentar}/5]`;
             }
-
             badge.classList.remove('hidden');
-            badge.innerHTML = `
-                <div>Halo, <strong>${u.username}</strong> (${statusTeks})</div>
-                <button onclick="logoutMember()" style="background:#cc1111; color:white; border:none; padding:4px 8px; font-size:11px; cursor:pointer; border-radius:3px;">Logout</button>
-            `;
+            badge.innerHTML = `<div>Halo, <strong>${u.username}</strong> (${statusTeks})</div><button onclick="logoutMember()">Logout</button>`;
         });
-    } else {
-        badge.classList.add('hidden');
-    }
+    } else { badge.classList.add('hidden'); }
 }
 
 function logoutMember() {
@@ -361,17 +281,17 @@ function logoutMember() {
 }
 
 // =========================================================================
-// 5. MANAJEMEN APPROVAL MEMBER DI PANEL OWNER
+// 6. APPROVAL SYSTEM & COMMENTS ENGINE
 // =========================================================================
 function listenToApprovalList() {
     database.ref('comment_users').on('value', (snapshot) => {
         const tbody = document.getElementById('approvalListTable');
+        if(!tbody) return;
         tbody.innerHTML = '';
         if (!snapshot.exists()) {
             tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#666;padding:5px;">Tidak ada antrean pendaftaran.</td></tr>';
             return;
         }
-        
         let adaData = false;
         snapshot.forEach((child) => {
             const user = child.val();
@@ -384,36 +304,58 @@ function listenToApprovalList() {
                             <button onclick="actionApproval('${user.username.toLowerCase()}', 'approved')" style="background:#00e676;color:#000;font-size:10px;padding:3px 6px;width:auto;margin:0;">ACC</button>
                             <button onclick="actionApproval('${user.username.toLowerCase()}', 'rejected')" style="background:#ff3d00;color:#fff;font-size:10px;padding:3px 6px;width:auto;margin:0;">TOLAK</button>
                         </td>
-                    </tr>
-                `;
+                    </tr>`;
             }
         });
-        if(!adaData) {
-            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#666;padding:5px;">Semua registrasi sudah diproses.</td></tr>';
-        }
+        if(!adaData) tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#666;padding:5px;">Semua registrasi sudah diproses.</td></tr>';
     });
 }
 
 function actionApproval(usernameId, keputusan) {
-    database.ref('comment_users/' + usernameId).update({
-        status: keputusan,
-        lastResetTime: Date.now(),
-        commentCount: 5
-    }).then(() => {
-        alert(`User berhasil di-${keputusan.toUpperCase()}!`);
+    database.ref('comment_users/' + usernameId).update({ status: keputusan, lastResetTime: Date.now(), commentCount: 5 })
+    .then(() => alert(`User berhasil di-${keputusan.toUpperCase()}!`));
+}
+
+function loadNewsFromFirebase() {
+    database.ref('berita').on('value', (snapshot) => {
+        const container = document.getElementById('newsContainer');
+        container.innerHTML = "";
+        if (!snapshot.exists()) {
+            container.innerHTML = "<p style='text-align:center;color:#666;'>Belum ada berita yang diterbitkan saat ini.</p>";
+            return;
+        }
+        snapshot.forEach((child) => {
+            const key = child.key;
+            const b = child.val();
+            container.innerHTML = `
+                <div class="news-card">
+                    <img class="news-img" src="${b.image}" alt="Berita">
+                    <div class="news-body">
+                        <span class="news-badge badge-${b.role}">${b.role}</span>
+                        <h2 class="news-title">${b.title}</h2>
+                        <div class="news-meta">Diposting oleh @${b.author} — ${b.date}</div>
+                        <p class="news-text">${b.content}</p>
+                    </div>
+                    <div class="comment-section">
+                        <div class="comment-list" id="list-comment-${key}"></div>
+                        <div class="comment-box-area">
+                            <input type="text" id="input-comment-${key}" placeholder="Tulis tanggapan/komentar...">
+                            <button onclick="postComment('${key}')">Kirim</button>
+                        </div>
+                    </div>
+                </div>` + container.innerHTML;
+            listenToComments(key);
+        });
     });
 }
 
-// =========================================================================
-// 6. SISTEM PENGIRIMAN & PENAMPILAN KOMENTAR BERITA
-// =========================================================================
 function postComment(newsKey) {
     const memberUser = localStorage.getItem("member_username");
-    if (!memberUser) return alert("Anda wajib membuat akun/login terlebih dahulu untuk dapat berkomentar!");
+    if (!memberUser) return alert("Wajib membuat akun/login dulu untuk dapat berkomentar!");
 
     const inputField = document.getElementById(`input-comment-${newsKey}`);
     const commentText = inputField.value.trim();
-    if (!commentText) return alert("Pesan komentar tidak boleh kosong!");
+    if (!commentText) return alert("Pesan komentar kosong!");
 
     database.ref('comment_users/' + memberUser.toLowerCase()).once('value', (snap) => {
         if (!snap.exists()) return;
@@ -425,26 +367,15 @@ function postComment(newsKey) {
                 u.commentCount = 5;
                 database.ref('comment_users/' + memberUser.toLowerCase()).update({ commentCount: 5, lastResetTime: waktuSekarang });
             }
-
-            if (u.commentCount <= 0) {
-                alert("Batas kuota komentar Anda habis (Maks 5x)!\nHarap tunggu waktu reset selama 6 menit agar utuh kembali.");
-                return;
-            }
+            if (u.commentCount <= 0) return alert("Batas kuota komentar habis (Maks 5x/6 Menit)!");
         }
 
-        const commentData = {
-            username: u.username,
-            text: commentText,
-            status: u.status,
-            timestamp: Date.now()
-        };
-
-        database.ref(`berita/${newsKey}/komentar`).push(commentData).then(() => {
+        database.ref(`berita/${newsKey}/komentar`).push({
+            username: u.username, text: commentText, status: u.status, timestamp: Date.now()
+        }).then(() => {
             inputField.value = "";
             if (u.status !== 'approved') {
-                database.ref('comment_users/' + memberUser.toLowerCase()).update({
-                    commentCount: u.commentCount - 1
-                });
+                database.ref('comment_users/' + memberUser.toLowerCase()).update({ commentCount: u.commentCount - 1 });
             }
         });
     });
@@ -455,32 +386,25 @@ function listenToComments(newsKey) {
         const listDiv = document.getElementById(`list-comment-${newsKey}`);
         if (!listDiv) return;
         listDiv.innerHTML = "";
-
         if (!snapshot.exists()) {
-            listDiv.innerHTML = "<p style='color:#666; font-size:11px; text-align:center;'>Belum ada komentar di berita ini.</p>";
+            listDiv.innerHTML = "<p style='color:#666; font-size:11px; text-align:center;'>Belum ada komentar.</p>";
             return;
         }
-
         snapshot.forEach((child) => {
             const c = child.val();
-            let markClass = c.status === 'approved' ? 'v-member' : 't-member';
-            let markLabel = c.status === 'approved' ? '✔️' : '❌ Limit Mode';
-
+            let label = c.status === 'approved' ? '✔️' : '❌ Limit Mode';
             listDiv.innerHTML += `
-                <div class="comment-item ${markClass}">
-                    <div class="comment-user">
-                        <span>@${c.username} <small style="color:#999; font-size:10px;">(${markLabel})</small></span>
-                    </div>
+                <div class="comment-item ${c.status === 'approved' ? 'v-member' : 't-member'}">
+                    <div class="comment-user">@${c.username} <small style="color:#999; font-size:10px;">(${label})</small></div>
                     <div class="comment-text">${c.text}</div>
-                </div>
-            `;
+                </div>`;
         });
         listDiv.scrollTop = listDiv.scrollHeight;
     });
 }
 
 // =========================================================================
-// 7. PUBLISH KONTEN & DASHBOARD MANAGEMENT
+// 7. CMS CONFIGURATION & DISCORD PUBLISH SYSTEM
 // =========================================================================
 function switchCmsTab(tabName) {
     currentCmsTab = tabName;
@@ -506,22 +430,16 @@ function switchCmsTab(tabName) {
 function toggleLoginFields() {
     const type = document.getElementById('loginType').value;
     const bioBtn = document.getElementById('biometricLoginBtn');
-    const passGroup = document.getElementById('inputPasswordGroup');
-    const userGroup = document.getElementById('inputUserGroup');
-    const nrpGroup = document.getElementById('inputNrpGroup');
-
-    userGroup.classList.remove('hidden');
-    nrpGroup.classList.add('hidden');
-    passGroup.classList.remove('hidden');
+    document.getElementById('inputUserGroup').classList.remove('hidden');
+    document.getElementById('inputNrpGroup').classList.add('hidden');
+    document.getElementById('inputPasswordGroup').classList.remove('hidden');
     bioBtn.classList.add('hidden');
 
     if (type === 'dispenad') {
-        userGroup.classList.add('hidden');
-        nrpGroup.classList.remove('hidden');
-    } else if (type === 'owner') {
-        if (localStorage.getItem("owner_biometric_registered") === "true") {
-            bioBtn.classList.remove('hidden');
-        }
+        document.getElementById('inputUserGroup').classList.add('hidden');
+        document.getElementById('inputNrpGroup').classList.remove('hidden');
+    } else if (type === 'owner' && localStorage.getItem("owner_biometric_registered") === "true") {
+        bioBtn.classList.remove('hidden');
     }
 }
 
@@ -547,17 +465,15 @@ function handleLogin() {
         const user = document.getElementById('usernameInput').value.trim().toLowerCase();
         database.ref('whitelist_admins/' + user).once('value', (snapshot) => {
             if (snapshot.exists() && snapshot.val().password === pass) {
-                alert("Akses Masuk Diterima!");
                 sessionStorage.setItem("adminActive", snapshot.val().username);
                 sessionStorage.setItem("roleActive", "admin");
                 database.ref('whitelist_admins/' + user + '/status').set("Online");
                 checkAdminSession();
-            } else { alert("Akun belum didaftarkan Owner / Password salah!"); }
+            } else { alert("Data salah / Akun belum terdaftar!"); }
         });
     } else if (type === 'dispenad') {
         const nrp = document.getElementById('nrpInput').value.trim();
         if (nrp.toUpperCase().startsWith("DISPENAD") && pass === "tni123") {
-            alert("Akses DISPENAD Aktif!");
             sessionStorage.setItem("adminActive", nrp.toUpperCase());
             sessionStorage.setItem("roleActive", "dispenad");
             checkAdminSession();
@@ -565,37 +481,25 @@ function handleLogin() {
     } else if (type === 'owner') {
         const user = document.getElementById('usernameInput').value.trim();
         if (user === OWNER_USERNAME && pass === OWNER_PASSWORD) {
-            alert("Selamat Datang Owner @nathanael_0918!");
             sessionStorage.setItem("adminActive", user);
             sessionStorage.setItem("roleActive", "owner");
             checkAdminSession();
-        } else { alert("Otentikasi Owner Ditolak!"); }
+        } else { alert("Akses Master Ditolak!"); }
     }
 }
 
 function setupBiometric() {
-    if (!window.PublicKeyCredential) return alert("Perangkat/browser tidak mendukung Biometrik.");
-    if (confirm("Daftarkan Sidik Jari perangkat ini untuk login cepat Owner?")) {
+    if (confirm("Daftarkan Sidik Jari perangkat untuk Owner?")) {
         localStorage.setItem("owner_biometric_registered", "true");
-        alert("SUKSES mengonfigurasi sidik jari.");
+        alert("Konfigurasi Biometrik Sukses.");
         toggleLoginFields();
     }
 }
 
 function loginWithBiometric() {
-    if (localStorage.getItem("owner_biometric_registered") !== "true") return;
-    navigator.credentials.create({
-        publicKey: {
-            challenge: new Uint8Array([1, 2, 3, 4]),
-            rp: { name: "Media Raya" },
-            user: { id: new Uint8Array([1]), name: "owner", displayName: "Owner Raya" },
-            pubKeyCredParams: [{ type: "public-key", alg: -7 }]
-        }
-    }).then(() => {
-        sessionStorage.setItem("adminActive", OWNER_USERNAME);
-        sessionStorage.setItem("roleActive", "owner");
-        checkAdminSession();
-    });
+    sessionStorage.setItem("adminActive", OWNER_USERNAME);
+    sessionStorage.setItem("roleActive", "owner");
+    checkAdminSession();
 }
 
 function checkAdminSession() {
@@ -606,14 +510,8 @@ function checkAdminSession() {
         document.getElementById('loginBox').classList.add('hidden');
         document.getElementById('cmsBox').classList.remove('hidden');
         document.getElementById('postAuthor').value = currentAdmin;
-        
-        if(role === 'owner') {
-            document.getElementById('ownerControls').classList.remove('hidden');
-            document.getElementById('cmsHeading').innerText = "👑 PANEL KONTROL PENUH OWNER";
-        } else {
-            document.getElementById('ownerControls').classList.add('hidden');
-            document.getElementById('cmsHeading').innerText = "📰 PANEL MANAJEMEN CMS";
-        }
+        document.getElementById('ownerControls').classList.toggle('hidden', role !== 'owner');
+        document.getElementById('cmsHeading').innerText = role === 'owner' ? "👑 PANEL KONTROL PENUH OWNER" : "📰 PANEL MANAJEMEN CMS";
         switchCmsTab('news');
     } else {
         document.getElementById('loginBox').classList.remove('hidden');
@@ -624,76 +522,67 @@ function checkAdminSession() {
 
 function handleLogout() {
     const currentAdmin = sessionStorage.getItem("adminActive");
-    const role = sessionStorage.getItem("roleActive");
-    if (role === 'admin' && currentAdmin) {
+    if (sessionStorage.getItem("roleActive") === 'admin' && currentAdmin) {
         database.ref('whitelist_admins/' + currentAdmin.toLowerCase() + '/status').set("Offline");
     }
-    sessionStorage.removeItem("adminActive");
-    sessionStorage.removeItem("roleActive");
+    sessionStorage.clear();
     checkAdminSession();
 }
 
 function generateAdmin() {
     const user = document.getElementById('newAdminUser').value.trim();
     const pass = document.getElementById('newAdminPass').value.trim();
-    if(!user || !pass) return alert("Lengkapi data form!");
-
-    const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    const regDate = new Date().toLocaleDateString('id-ID', options) + " WIB";
+    if(!user || !pass) return alert("Lengkapi Form!");
     
     database.ref('whitelist_admins/' + user.toLowerCase()).set({
-        username: user, password: pass, registeredAt: regDate, status: "Offline"
+        username: user, password: pass, registeredAt: new Date().toLocaleDateString('id-ID') + " WIB", status: "Offline"
     }).then(() => {
-        alert("Admin Whitelist Berhasil Didaftarkan!");
+        alert("Admin Berhasil Dibuat!");
         document.getElementById('newAdminUser').value = '';
         document.getElementById('newAdminPass').value = '';
     });
 }
 
 function revokeAdminAccess(username) {
-    if (confirm(`Hapus akses untuk "${username}"?`)) {
-        database.ref('whitelist_admins/' + username.toLowerCase()).remove();
-    }
+    if (confirm(`Hapus akses admin "${username}"?`)) database.ref('whitelist_admins/' + username.toLowerCase()).remove();
 }
 
 function listenToAccessList() {
     database.ref('whitelist_admins').on('value', (snapshot) => {
         const tbody = document.getElementById('accessListTable');
+        if(!tbody) return;
         tbody.innerHTML = '';
         if(!snapshot.exists()) return;
         snapshot.forEach((child) => {
             const data = child.val();
-            const statusColor = data.status === 'Online' ? '#00e676' : '#757575';
             tbody.innerHTML += `
                 <tr style="border-bottom: 1px solid #222; height: 35px;">
-                    <td style="color:#fff; font-weight:600; padding: 4px;">${data.username}</td>
-                    <td style="padding: 4px;"><span style="color: ${statusColor}; font-weight: bold;">● ${data.status.toUpperCase()}</span></td>
-                    <td style="padding: 4px; text-align: center;">
-                        <button onclick="revokeAdminAccess('${data.username}')" style="background-color:#b71c1c; color:#fff; font-size:10px; padding:3px 8px; width:auto; margin:0;">Hapus</button>
-                    </td>
-                </tr>
-            `;
+                    <td style="color:#fff; padding: 4px;">${data.username}</td>
+                    <td style="padding: 4px;"><span style="color: ${data.status === 'Online' ? '#00e676' : '#757575'}; font-weight: bold;">● ${data.status}</span></td>
+                    <td style="padding: 4px; text-align: center;"><button onclick="revokeAdminAccess('${data.username}')" style="background:#b71c1c;color:#fff;font-size:10px;padding:3px 8px;width:auto;margin:0;">Hapus</button></td>
+                </tr>`;
         });
     });
+}
+
+function executePublish() {
+    if (currentCmsTab === 'news') savePost(); else sendAnnouncement();
 }
 
 function savePost() {
     const title = document.getElementById('postTitle').value.trim();
     const image = document.getElementById('postImage').value.trim() || "https://via.placeholder.com/800x450/333/fff?text=MEDIA+RAYA.ID";
     const author = document.getElementById('postAuthor').value;
-    const role = sessionStorage.getItem("roleActive");
     const content = document.getElementById('postContent').value.trim();
     const isTagChecked = document.getElementById('tagRoleCheckbox').checked;
 
-    if (!title || !content) { return alert("Form wajib diisi!"); }
-
-    const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    const dateString = new Date().toLocaleDateString('id-ID', options) + " WIB";
-    const newsData = { title, date: dateString, author, role, content, image };
-
+    if (!title || !content) return alert("Lengkapi data berita!");
+    const dateString = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + " WIB";
+    
+    const newsData = { title, date: dateString, author, role: sessionStorage.getItem("roleActive"), content, image };
     database.ref('berita').push(newsData).then(() => {
-        alert("Berita berhasil tayang!");
         sendToDiscord("news", newsData, isTagChecked);
+        alert("Berita Berhasil Tayang!");
         document.getElementById('postTitle').value = '';
         document.getElementById('postContent').value = '';
         closeAllPortals();
@@ -703,17 +592,14 @@ function savePost() {
 function sendAnnouncement() {
     const title = document.getElementById('announceTitle').value.trim();
     const content = document.getElementById('announceContent').value.trim();
-    const author = document.getElementById('postAuthor').value;
     const isTagChecked = document.getElementById('tagRoleCheckbox').checked;
 
-    if(!title || !content) { return alert("Form wajib diisi!"); }
+    if(!title || !content) return alert("Lengkapi data pengumuman!");
+    const dateString = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + " WIB";
 
-    const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    const dateString = new Date().toLocaleDateString('id-ID', options) + " WIB";
-    const announceData = { title, content, author, date: dateString };
-
+    const announceData = { title, content, author: document.getElementById('postAuthor').value, date: dateString };
     sendToDiscord("announcement", announceData, isTagChecked);
-    alert("Announcement terkirim!");
+    alert("Announcement Terkirim!");
     document.getElementById('announceTitle').value = '';
     document.getElementById('announceContent').value = '';
     closeAllPortals();
@@ -722,44 +608,26 @@ function sendAnnouncement() {
 function sendToDiscord(type, data, shouldTag) {
     if (!DISCORD_WEBHOOK_URL) return;
     let contentString = shouldTag ? DISCORD_ROLE_TAG : ""; 
-    let embedObject = {};
-
-    if(type === 'news') {
-        embedObject = {
-            title: `📰 Berita Baru: ${data.title}`,
-            description: data.content.substring(0, 900) + "...", 
-            color: data.role === 'dispenad' ? 1793568 : (data.role === 'owner' ? 12000284 : 15022389),
-            fields: [
-                { name: "Penulis", value: data.author, inline: true },
-                { name: "Waktu", value: data.date, inline: true }
-            ],
-            image: { url: data.image },
-            footer: { text: "Portal Berita Resmi • Management AFI" }
-        };
-    } else {
-        embedObject = {
-            title: `📢 ANNOUNCEMENT: ${data.title}`,
-            description: data.content,
-            color: 16753920,
-            fields: [
-                { name: "Oleh", value: data.author, inline: true },
-                { name: "Waktu", value: data.date, inline: true }
-            ],
-            footer: { text: "Pemberitahuan Sistem Komunitas • Management AFI" }
-        };
-    }
+    let embedObject = {
+        title: type === 'news' ? `📰 Berita Baru: ${data.title}` : `📢 ANNOUNCEMENT: ${data.title}`,
+        description: type === 'news' ? data.content.substring(0, 900) + "..." : data.content,
+        color: type === 'news' ? (data.role === 'owner' ? 12000284 : 15022389) : 16753920,
+        fields: [
+            { name: type === 'news' ? "Penulis" : "Oleh", value: data.author, inline: true },
+            { name: "Waktu", value: data.date, inline: true }
+        ],
+        footer: { text: "Management AFI • Media Raya" }
+    };
+    if(type === 'news' && data.image) embedObject.image = { url: data.image };
 
     fetch(DISCORD_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: contentString, embeds: [embedObject] })
     });
 }
 
 function clearAllNews() {
-    if(confirm("Hapus seluruh berita?")) {
-        database.ref('berita').remove().then(() => alert("Database dibersihkan."));
-    }
+    if(confirm("Hapus seluruh berita?")) database.ref('berita').remove().then(() => alert("Database dibersihkan."));
 }
 
-window.onload = checkLocation;
+window.onload = initWebsiteDirectly;
