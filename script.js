@@ -1,5 +1,5 @@
 // =========================================================================
-// 1. KONFIGURASI DATABASE & WEBHOOK (FINAL POLRI & DISCORD)
+// 1. KONFIGURASI DATABASE & WEBHOOK
 // =========================================================================
 const firebaseConfig = {
   apiKey: "AIzaSyD9BmV4XKXuMWa4PZHpb7Bbt-rHs61m3lE",
@@ -15,16 +15,16 @@ const firebaseConfig = {
 const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1500117207969960079/SYsNhmAeoiO1Exsl-dAIqG2RYoJy546mrRGTvIIjGmQJbOA-XrF17bK8GXXYS5khuUf8";
 const DISCORD_ROLE_TAG = "<@&1481911914404642846>";
 
-// Data Utama Pemilik Website
 const OWNER_USERNAME = "@nathanael_0918";
 const OWNER_PASSWORD = "owner_raya_2026"; 
 
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 let currentCmsTab = "news"; 
+let currentAuthMode = "register";
 
 // =========================================================================
-// 2. SISTEM GEOLOCATION & PROTEKSI REALTIME LIVE KICK ADMIN
+// 2. SISTEM GEOLOCATION
 // =========================================================================
 const BLACKLIST_REGIONS = [
     "batam", "kepulauan riau", "kepri", "papua", "papua barat", "papua selatan", 
@@ -66,8 +66,10 @@ function checkLocation() {
                         document.getElementById('appContainer').classList.remove('hidden');
                         loadNewsFromFirebase();
                         listenToAccessList(); 
-                        listenToGlobalSettings(); // Ambil setingan logo, background & musik secara live
-                        startRealtimeSecurityCheck(); // Pantau live kick admin
+                        listenToGlobalSettings();
+                        listenToApprovalList(); // Memantau daftar approval register komentar di sisi Owner
+                        startRealtimeSecurityCheck(); 
+                        checkActiveUserSession(); // Memeriksa sesi log masuk member komentar
                     }
                 } else { showBlocker("GAGAL OTENTIKASI", "Gagal memproses nama wilayah."); }
             })
@@ -84,7 +86,6 @@ function showBlocker(title, message) {
     blocker.innerHTML = `<h1>${title}</h1><p>${message}</p>`;
 }
 
-// Memantau sesi admin terdaftar secara live, jika dihapus oleh owner langsung ditendang seketika
 function startRealtimeSecurityCheck() {
     setInterval(() => {
         const currentAdmin = sessionStorage.getItem("adminActive");
@@ -99,24 +100,22 @@ function startRealtimeSecurityCheck() {
                 }
             });
         }
-    }, 3000); // Mengecek status database setiap 3 detik
+    }, 3000);
 }
 
 // =========================================================================
-// 3. MASTER CONFIGURATION REALTIME & AUDIO ENGINE
+// 3. MASTER SETTINGS & AUDIO ENGINE (AUTOPLAY YOUTUBE ENGINE LIVE BERSUARA)
 // =========================================================================
 function listenToGlobalSettings() {
     database.ref('global_settings').on('value', (snapshot) => {
         if (!snapshot.exists()) return;
         const config = snapshot.val();
 
-        // 1. Sinkronisasi Logo Utama
         if (config.logoUrl) {
             document.getElementById('webLogoImg').src = config.logoUrl;
             document.getElementById('setWebLogo').value = config.logoUrl;
         }
 
-        // 2. Sinkronisasi Background Tampilan Web
         if (config.backgroundUrl) {
             document.getElementById('webBody').style.backgroundImage = `url('${config.backgroundUrl}')`;
             document.getElementById('setWebBackground').value = config.backgroundUrl;
@@ -124,14 +123,12 @@ function listenToGlobalSettings() {
             document.getElementById('webBody').style.backgroundImage = 'none';
         }
 
-        // 3. Set value form agar sinkron di input owner
         if (config.musicUrl) document.getElementById('setWebMusic').value = config.musicUrl;
         if (config.volume) {
             document.getElementById('setWebVolume').value = config.volume;
             document.getElementById('volumeValLabel').innerText = config.volume + "%";
         }
 
-        // 4. Jalankan Player Musik (YouTube / Spotify)
         renderAudioPlayer(config.musicUrl, config.volume || 50);
     });
 }
@@ -140,25 +137,14 @@ function renderAudioPlayer(url, volume) {
     const container = document.getElementById('musicPlayerContainer');
     if (!url) { container.innerHTML = ""; return; }
 
-    let embedHtml = "";
-    
-    if (url.includes("youtube.com") || url.includes("youtu.be")) {
-        let videoId = "";
-        if (url.includes("v=")) videoId = url.split("v=")[1].split("&")[0];
-        else if (url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1].split("?")[0];
+    let videoId = "";
+    if (url.includes("v=")) videoId = url.split("v=")[1].split("&")[0];
+    else if (url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1].split("?")[0];
 
-        if (videoId) {
-            embedHtml = `<iframe width="100" height="100" src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}" allow="autoplay"></iframe>`;
-        }
-    } else if (url.includes("spotify.com")) {
-        let path = "";
-        if (url.includes("open.spotify.com/")) {
-            path = url.split("open.spotify.com/")[1].split("?")[0];
-            embedHtml = `<iframe src="https://open.spotify.com/embed/${path}" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
-        }
+    if (videoId) {
+        // Embed YouTube dipaksa autoplay langsung bersuara secara global dengan manipulasi script interaksi
+        container.innerHTML = `<iframe id="ytGlobalPlayer" width="100" height="100" src="https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&enablejsapi=1" allow="autoplay"></iframe>`;
     }
-
-    container.innerHTML = embedHtml;
 }
 
 function saveGlobalSettings() {
@@ -170,21 +156,273 @@ function saveGlobalSettings() {
     const settingsData = { logoUrl, backgroundUrl, musicUrl, volume };
 
     database.ref('global_settings').set(settingsData)
-    .then(() => {
-        alert("PENGATURAN GLOBAL BERHASIL DISIMPAN!\nTampilan Logo, Background, dan Musik seketika berubah di layar semua pengguna.");
-    })
-    .catch(err => alert("Gagal menyimpan konfigurasi: " + err.message));
+    .then(() => { alert("PENGATURAN GLOBAL SUKSES DISIMPAN!"); })
+    .catch(err => alert("Gagal menyimpan: " + err.message));
 }
 
-// Sinkronisasi angka teks slider volume saat digeser manual
 document.addEventListener('input', function(e) {
     if(e.target && e.target.id === 'setWebVolume') {
         document.getElementById('volumeValLabel').innerText = e.target.value + "%";
     }
 });
 
+// Pemicu otomatis agar browser memperbolehkan suara langsung aktif saat user klik apapun di web
+document.addEventListener('click', () => {
+    const iframe = document.getElementById('ytGlobalPlayer');
+    if (iframe) {
+        iframe.contentWindow.postMessage('{"event":"command","func":"unmute","args":""}', '*');
+        iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+    }
+}, { once: true });
+
 // =========================================================================
-// 4. SELEKSI CMS TAB
+// 4. PORTAL AUTENTIKASI MEMBER KOMENTAR (ACC/TOLAK/LIMIT RESET 6 MENIT)
+// =========================================================================
+function openUserAuthPortal() {
+    document.getElementById('navOverlay').style.display = 'none';
+    document.getElementById('mainPortal').classList.add('hidden');
+    document.getElementById('adminPortal').classList.add('hidden');
+    document.getElementById('userAuthPortal').classList.remove('hidden');
+}
+
+function closeAllPortals() {
+    document.getElementById('userAuthPortal').classList.add('hidden');
+    document.getElementById('adminPortal').classList.add('hidden');
+    document.getElementById('mainPortal').classList.remove('hidden');
+}
+
+function switchAuthMode(mode) {
+    currentAuthMode = mode;
+    const tReg = document.getElementById('tabReg');
+    const tLog = document.getElementById('tabLog');
+    const btn = document.getElementById('authSubmitBtn');
+    const title = document.getElementById('authTitle');
+
+    if (mode === 'register') {
+        tReg.style.backgroundColor = "#e53935"; tLog.style.backgroundColor = "#444";
+        title.innerText = "Registrasi Akun Member"; btn.innerText = "Kirim Pengajuan Pendaftaran";
+    } else {
+        tLog.style.backgroundColor = "#e53935"; tReg.style.backgroundColor = "#444";
+        title.innerText = "Login Member Komentar"; btn.innerText = "Masuk Sebagai Member";
+    }
+}
+
+function handleUserRegister() {
+    const username = document.getElementById('authUsername').value.trim();
+    const password = document.getElementById('authPassword').value.trim();
+
+    if (!username || !password) return alert("Lengkapi data kolom!");
+    if (username.includes(" ")) return alert("Username tidak boleh mengandung spasi!");
+
+    if (currentAuthMode === 'register') {
+        // Cari tahu apakah username sudah pernah diajukan
+        database.ref('comment_users/' + username.toLowerCase()).once('value', (snap) => {
+            if (snap.exists()) {
+                alert("Username tersebut sudah terdaftar/sedang dalam proses review!");
+            } else {
+                // Masukkan data registrasi baru dengan status awal 'pending'
+                database.ref('comment_users/' + username.toLowerCase()).set({
+                    username: username,
+                    password: password,
+                    status: 'pending', // Nilai status: pending, approved, rejected
+                    commentCount: 5,   // Kuota awal default bagi yang ditolak/pending
+                    lastResetTime: Date.now()
+                }).then(() => {
+                    alert("Pendaftaran berhasil diajukan! Menunggu persetujuan Owner di menu Panel.");
+                    document.getElementById('authUsername').value = "";
+                    document.getElementById('authPassword').value = "";
+                });
+            }
+        });
+    } else {
+        // MODE LOG IN MEMBER
+        database.ref('comment_users/' + username.toLowerCase()).once('value', (snap) => {
+            if (snap.exists() && snap.val().password === password) {
+                const userData = snap.val();
+                localStorage.setItem("member_username", userData.username);
+                alert("Login Member Sukses!");
+                checkActiveUserSession();
+                closeAllPortals();
+            } else {
+                alert("Username atau Password Member salah!");
+            }
+        });
+    }
+}
+
+function checkActiveUserSession() {
+    const memberUser = localStorage.getItem("member_username");
+    const badge = document.getElementById('userSessionBadge');
+    
+    if (memberUser) {
+        database.ref('comment_users/' + memberUser.toLowerCase()).on('value', (snap) => {
+            if(!snap.exists()) { logoutMember(); return; }
+            const u = snap.val();
+            
+            // Logika pengecekan sisa kuota & Reset waktu otomatis 6 menit
+            let sisaKomentar = u.commentCount;
+            let statusTeks = u.status === 'approved' ? '🚀 VERIFIED MEMBER (Bebas Komentar)' : (u.status === 'rejected' ? '⚠️ DITOLAK (Limit Mode Aktif)' : '⏳ PENDING REVIEW');
+            
+            if (u.status !== 'approved') {
+                const waktuSekarang = Date.now();
+                const selisihWaktu = waktuSekarang - u.lastResetTime;
+                
+                if (selisihWaktu >= 6 * 60 * 1000) { // Jika sudah melewati batas waktu 6 menit
+                    sisaKomentar = 5;
+                    database.ref('comment_users/' + memberUser.toLowerCase()).update({
+                        commentCount: 5,
+                        lastResetTime: waktuSekarang
+                    });
+                }
+                statusTeks += ` | Sisa Kuota: [${sisaKomentar}/5]`;
+            }
+
+            badge.classList.remove('hidden');
+            badge.innerHTML = `
+                <div>Halo, <strong>${u.username}</strong> (${statusTeks})</div>
+                <button onclick="logoutMember()" style="background:#cc1111; color:white; border:none; padding:4px 8px; font-size:11px; cursor:pointer; border-radius:3px;">Logout</button>
+            `;
+        });
+    } else {
+        badge.classList.add('hidden');
+    }
+}
+
+function logoutMember() {
+    const memberUser = localStorage.getItem("member_username");
+    if(memberUser) database.ref('comment_users/' + memberUser.toLowerCase()).off();
+    localStorage.removeItem("member_username");
+    checkActiveUserSession();
+    alert("Sesi member ditutup.");
+}
+
+// =========================================================================
+// 5. MANAJEMEN APPROVAL MEMBER DI PANEL OWNER
+// =========================================================================
+function listenToApprovalList() {
+    database.ref('comment_users').on('value', (snapshot) => {
+        const tbody = document.getElementById('approvalListTable');
+        tbody.innerHTML = '';
+        if (!snapshot.exists()) {
+            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#666;padding:5px;">Tidak ada antrean pendaftaran.</td></tr>';
+            return;
+        }
+        
+        let adaData = false;
+        snapshot.forEach((child) => {
+            const user = child.val();
+            if (user.status === 'pending') {
+                adaData = true;
+                tbody.innerHTML += `
+                    <tr style="border-bottom:1px solid #333; height:35px;">
+                        <td style="color:#fff; font-weight:bold;">${user.username}</td>
+                        <td style="text-align:center; display:flex; gap:5px; justify-content:center; align-items:center; height:35px;">
+                            <button onclick="actionApproval('${user.username.toLowerCase()}', 'approved')" style="background:#00e676;color:#000;font-size:10px;padding:3px 6px;width:auto;margin:0;">ACC</button>
+                            <button onclick="actionApproval('${user.username.toLowerCase()}', 'rejected')" style="background:#ff3d00;color:#fff;font-size:10px;padding:3px 6px;width:auto;margin:0;">TOLAK</button>
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+        if(!adaData) {
+            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#666;padding:5px;">Semua registrasi sudah diproses.</td></tr>';
+        }
+    });
+}
+
+function actionApproval(usernameId, keputusan) {
+    database.ref('comment_users/' + usernameId).update({
+        status: keputusan,
+        lastResetTime: Date.now(),
+        commentCount: 5
+    }).then(() => {
+        alert(`User berhasil di-${keputusan.toUpperCase()}!`);
+    });
+}
+
+// =========================================================================
+// 6. SISTEM PENGIRIMAN & PENAMPILAN KOMENTAR BERITA
+// =========================================================================
+function postComment(newsKey) {
+    const memberUser = localStorage.getItem("member_username");
+    if (!memberUser) return alert("Anda wajib membuat akun/login terlebih dahulu untuk dapat berkomentar!");
+
+    const inputField = document.getElementById(`input-comment-${newsKey}`);
+    const commentText = inputField.value.trim();
+    if (!commentText) return alert("Pesan komentar tidak boleh kosong!");
+
+    // Ambil data status akun komentator dari Firebase secara real-time
+    database.ref('comment_users/' + memberUser.toLowerCase()).once('value', (snap) => {
+        if (!snap.exists()) return;
+        const u = snap.val();
+
+        // Validasi pembatasan sisa komentar jika statusnya ditolak/pending
+        if (u.status !== 'approved') {
+            const waktuSekarang = Date.now();
+            if (waktuSekarang - u.lastResetTime >= 6 * 60 * 1000) {
+                // Auto Reset instan jika masa tunggu 6 menit terlewati saat hendak posting
+                u.commentCount = 5;
+                database.ref('comment_users/' + memberUser.toLowerCase()).update({ commentCount: 5, lastResetTime: waktuSekarang });
+            }
+
+            if (u.commentCount <= 0) {
+                alert("Batas kuota komentar Anda habis (Maks 5x)!\nHarap tunggu waktu reset selama 6 menit agar utuh kembali.");
+                return;
+            }
+        }
+
+        // Jalankan perintah post komentar ke berita terkait
+        const commentData = {
+            username: u.username,
+            text: commentText,
+            status: u.status,
+            timestamp: Date.now()
+        };
+
+        database.ref(`berita/${newsKey}/komentar`).push(commentData).then(() => {
+            inputField.value = "";
+            
+            // Potong kuota komentar jika statusnya bukan 'approved'
+            if (u.status !== 'approved') {
+                database.ref('comment_users/' + memberUser.toLowerCase()).update({
+                    commentCount: u.commentCount - 1
+                });
+            }
+        });
+    });
+}
+
+function listenToComments(newsKey) {
+    database.ref(`berita/${newsKey}/komentar`).on('value', (snapshot) => {
+        const listDiv = document.getElementById(`list-comment-${newsKey}`);
+        if (!listDiv) return;
+        listDiv.innerHTML = "";
+
+        if (!snapshot.exists()) {
+            listDiv.innerHTML = "<p style='color:#666; font-size:11px; text-align:center;'>Belum ada komentar di berita ini.</p>";
+            return;
+        }
+
+        snapshot.forEach((child) => {
+            const c = child.val();
+            let markClass = c.status === 'approved' ? 'v-member' : 't-member';
+            let markLabel = c.status === 'approved' ? '✔️' : '❌ Limit Mode';
+
+            listDiv.innerHTML += `
+                <div class="comment-item ${markClass}">
+                    <div class="comment-user">
+                        <span>@${c.username} <small style="color:#999; font-size:10px;">(${markLabel})</small></span>
+                    </div>
+                    <div class="comment-text">${c.text}</div>
+                </div>
+            `;
+        });
+        listDiv.scrollTop = listDiv.scrollHeight; // Auto scroll ke bawah
+    });
+}
+
+// =========================================================================
+// 7. PUBLISH KONTEN & DASHBOARD MANAGEMENT
 // =========================================================================
 function switchCmsTab(tabName) {
     currentCmsTab = tabName;
@@ -198,18 +436,10 @@ function switchCmsTab(tabName) {
         btnNews.style.backgroundColor = "#2e7d32"; btnNews.style.color = "#fff";
         btnAnnounce.style.backgroundColor = "#444"; btnAnnounce.style.color = "#aaa";
         formNews.classList.remove('hidden'); formAnnounce.classList.add('hidden');
-        submitBtn.innerText = "Publish Berita & Kirim ke Discord";
-    } else {
-        btnNews.style.backgroundColor = "#444"; btnNews.style.color = "#aaa";
-        btnAnnounce.style.backgroundColor = "#e53935"; btnAnnounce.style.color = "#fff";
-        formNews.classList.add('hidden'); formAnnounce.classList.remove('hidden');
         submitBtn.innerText = "Siarkan Pengumuman ke Discord";
     }
 }
 
-// =========================================================================
-// 5. SISTEM LOGIN, SESI, & BIOMETRIK (SIDIK JARI)
-// =========================================================================
 function toggleLoginFields() {
     const type = document.getElementById('loginType').value;
     const bioBtn = document.getElementById('biometricLoginBtn');
@@ -240,14 +470,10 @@ function toggleMenu() {
 function openAdminPortal() {
     document.getElementById('navOverlay').style.display = 'none';
     document.getElementById('mainPortal').classList.add('hidden');
+    document.getElementById('userAuthPortal').classList.add('hidden');
     document.getElementById('adminPortal').classList.remove('hidden');
     checkAdminSession();
     toggleLoginFields();
-}
-
-function closeAdminPortal() {
-    document.getElementById('adminPortal').classList.add('hidden');
-    document.getElementById('mainPortal').classList.remove('hidden');
 }
 
 function handleLogin() {
@@ -285,13 +511,10 @@ function handleLogin() {
 }
 
 function setupBiometric() {
-    if (!window.PublicKeyCredential) {
-        alert("Perangkat atau browser ini tidak mendukung sistem keamanan Sidik Jari/Biometrik.");
-        return;
-    }
-    if (confirm("Apakah Anda ingin mendaftarkan Sidik Jari perangkat ini untuk login cepat Owner?")) {
+    if (!window.PublicKeyCredential) return alert("Perangkat/browser tidak mendukung Biometrik.");
+    if (confirm("Daftarkan Sidik Jari perangkat ini untuk login cepat Owner?")) {
         localStorage.setItem("owner_biometric_registered", "true");
-        alert("SUKSES! Sidik Jari perangkat Anda berhasil dikonfigurasi.");
+        alert("SUKSES mengonfigurasi sidik jari.");
         toggleLoginFields();
     }
 }
@@ -306,11 +529,10 @@ function loginWithBiometric() {
             pubKeyCredParams: [{ type: "public-key", alg: -7 }]
         }
     }).then(() => {
-        alert("Verifikasi Sidik Jari Berhasil! Selamat datang kembali Owner.");
         sessionStorage.setItem("adminActive", OWNER_USERNAME);
         sessionStorage.setItem("roleActive", "owner");
         checkAdminSession();
-    }).catch(() => { alert("Gagal memverifikasi sidik jari."); });
+    });
 }
 
 function checkAdminSession() {
@@ -340,40 +562,33 @@ function checkAdminSession() {
 function handleLogout() {
     const currentAdmin = sessionStorage.getItem("adminActive");
     const role = sessionStorage.getItem("roleActive");
-
     if (role === 'admin' && currentAdmin) {
         database.ref('whitelist_admins/' + currentAdmin.toLowerCase() + '/status').set("Offline");
     }
     sessionStorage.removeItem("adminActive");
     sessionStorage.removeItem("roleActive");
     checkAdminSession();
-    alert("Sesi ditutup.");
 }
 
-// =========================================================================
-// 6. MANAJEMEN USER & CABUT AKSES (EKSKLUSIF PANEL OWNER)
-// =========================================================================
 function generateAdmin() {
     const user = document.getElementById('newAdminUser').value.trim();
     const pass = document.getElementById('newAdminPass').value.trim();
-
-    if(!user || !pass) { alert("Lengkapi form user baru!"); return; }
-    if(user.includes(" ") || user.startsWith("@")) { alert("Username dilarang pakai spasi/@!"); return; }
+    if(!user || !pass) return alert("Lengkapi data form!");
 
     const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
     const regDate = new Date().toLocaleDateString('id-ID', options) + " WIB";
-    const adminData = { username: user, password: pass, registeredAt: regDate, status: "Offline" };
-
-    database.ref('whitelist_admins/' + user.toLowerCase()).set(adminData)
-    .then(() => {
-        alert(`Akun "${user}" berhasil didaftarkan ke Whitelist!`);
+    
+    database.ref('whitelist_admins/' + user.toLowerCase()).set({
+        username: user, password: pass, registeredAt: regDate, status: "Offline"
+    }).then(() => {
+        alert("Admin Whitelist Berhasil Didaftarkan!");
         document.getElementById('newAdminUser').value = '';
         document.getElementById('newAdminPass').value = '';
     });
 }
 
 function revokeAdminAccess(username) {
-    if (confirm(`Apakah Anda yakin ingin menghapus & mencabut hak akses untuk "${username}"?`)) {
+    if (confirm(`Hapus akses untuk "${username}"?`)) {
         database.ref('whitelist_admins/' + username.toLowerCase()).remove();
     }
 }
@@ -382,10 +597,7 @@ function listenToAccessList() {
     database.ref('whitelist_admins').on('value', (snapshot) => {
         const tbody = document.getElementById('accessListTable');
         tbody.innerHTML = '';
-        if(!snapshot.exists()) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#555;padding:10px;">Belum ada nama terdaftar.</td></tr>';
-            return;
-        }
+        if(!snapshot.exists()) return;
         snapshot.forEach((child) => {
             const data = child.val();
             const statusColor = data.status === 'Online' ? '#00e676' : '#757575';
@@ -394,7 +606,7 @@ function listenToAccessList() {
                     <td style="color:#fff; font-weight:600; padding: 4px;">${data.username}</td>
                     <td style="padding: 4px;"><span style="color: ${statusColor}; font-weight: bold;">● ${data.status.toUpperCase()}</span></td>
                     <td style="padding: 4px; text-align: center;">
-                        <button onclick="revokeAdminAccess('${data.username}')" style="background-color:#b71c1c; color:#fff; font-size:10px; padding:3px 8px; width:auto; margin:0; border-radius:3px; border:none; cursor:pointer;">Hapus Akses</button>
+                        <button onclick="revokeAdminAccess('${data.username}')" style="background-color:#b71c1c; color:#fff; font-size:10px; padding:3px 8px; width:auto; margin:0;">Hapus</button>
                     </td>
                 </tr>
             `;
@@ -402,9 +614,6 @@ function listenToAccessList() {
     });
 }
 
-// =========================================================================
-// 7. PUBLISH KONTEN & DISCORD SINKRONISASI
-// =========================================================================
 function executePublish() {
     if (currentCmsTab === 'news') { savePost(); } else { sendAnnouncement(); }
 }
@@ -417,9 +626,19 @@ function loadNewsFromFirebase() {
             newsContainer.innerHTML = '<p style="text-align:center;color:#555;padding:20px;">Belum ada berita terbit.</p>';
             return;
         }
-        let newsList = [];
-        snapshot.forEach((childSnapshot) => { newsList.push(childSnapshot.val()); });
-        newsList.reverse().forEach(item => {
+        
+        let newsKeys = [];
+        let newsData = [];
+        snapshot.forEach((childSnapshot) => { 
+            newsKeys.push(childSnapshot.key);
+            newsData.push(childSnapshot.val()); 
+        });
+
+        // Balik urutan untuk menampilkan berita terbaru di paling atas
+        for (let i = newsData.length - 1; i >= 0; i--) {
+            const item = newsData[i];
+            const key = newsKeys[i];
+
             let badgeHTML = `<span class="badge badge-admin">KONTRIBUTOR</span>`;
             if(item.role === 'dispenad') badgeHTML = `<span class="badge badge-dispenad">🎖️ DISPENAD TNI</span>`;
             else if(item.role === 'owner') badgeHTML = `<span class="badge badge-owner">👑 OWNER</span>`;
@@ -430,12 +649,23 @@ function loadNewsFromFirebase() {
                     <div class="news-meta">${badgeHTML} <span>${item.date} • Oleh: <strong>${item.author}</strong></span></div>
                     <div class="news-title">${item.title}</div>
                     <div class="news-content">${item.content}</div>
+                    
+                    <div class="comment-section">
+                        <div class="comment-header">💬 Kolom Komentar Publik</div>
+                        <div class="comment-list" id="list-comment-${key}"></div>
+                        <div class="comment-box-input">
+                            <input type="text" id="input-comment-${key}" placeholder="Tulis komentar publik kamu di sini...">
+                            <button onclick="postComment('${key}')">Kirim</button>
+                        </div>
+                    </div>
                 </div>
             `;
-        });
+            
+            // Nyalakan listener data real-time khusus komentar untuk berita ini
+            listenToComments(key);
+        }
     });
 }
-
 function savePost() {
     const title = document.getElementById('postTitle').value.trim();
     const image = document.getElementById('postImage').value.trim() || "https://via.placeholder.com/800x450/333/fff?text=MEDIA+RAYA.ID";
@@ -455,7 +685,7 @@ function savePost() {
         sendToDiscord("news", newsData, isTagChecked);
         document.getElementById('postTitle').value = '';
         document.getElementById('postContent').value = '';
-        closeAdminPortal();
+        closeAllPortals();
     });
 }
 
@@ -475,7 +705,7 @@ function sendAnnouncement() {
     alert("Announcement terkirim!");
     document.getElementById('announceTitle').value = '';
     document.getElementById('announceContent').value = '';
-    closeAdminPortal();
+    closeAllPortals();
 }
 
 function sendToDiscord(type, data, shouldTag) {
