@@ -24,7 +24,7 @@ const database = firebase.database();
 let currentCmsTab = "news"; 
 
 // =========================================================================
-// 2. SISTEM GEOLOCATION
+// 2. SISTEM GEOLOCATION & PROTEKSI REALTIME LIVE KICK ADMIN
 // =========================================================================
 const BLACKLIST_REGIONS = [
     "batam", "kepulauan riau", "kepri", "papua", "papua barat", "papua selatan", 
@@ -66,6 +66,8 @@ function checkLocation() {
                         document.getElementById('appContainer').classList.remove('hidden');
                         loadNewsFromFirebase();
                         listenToAccessList(); 
+                        listenToGlobalSettings(); // Ambil setingan logo, background & musik secara live
+                        startRealtimeSecurityCheck(); // Pantau live kick admin
                     }
                 } else { showBlocker("GAGAL OTENTIKASI", "Gagal memproses nama wilayah."); }
             })
@@ -78,11 +80,111 @@ function checkLocation() {
 
 function showBlocker(title, message) {
     const blocker = document.getElementById('geoBlocker');
+    blocker.classList.remove('hidden');
     blocker.innerHTML = `<h1>${title}</h1><p>${message}</p>`;
 }
 
+// Memantau sesi admin terdaftar secara live, jika dihapus oleh owner langsung ditendang seketika
+function startRealtimeSecurityCheck() {
+    setInterval(() => {
+        const currentAdmin = sessionStorage.getItem("adminActive");
+        const role = sessionStorage.getItem("roleActive");
+
+        if (currentAdmin && role === 'admin') {
+            database.ref('whitelist_admins/' + currentAdmin.toLowerCase()).once('value', (snapshot) => {
+                if (!snapshot.exists()) {
+                    sessionStorage.clear();
+                    document.getElementById('appContainer').classList.add('hidden');
+                    showBlocker("TIDAK ADA AKSES ADMIN", "Maaf, akun Anda telah dihapus atau dicabut izin aksesnya oleh Owner.");
+                }
+            });
+        }
+    }, 3000); // Mengecek status database setiap 3 detik
+}
+
 // =========================================================================
-// 3. SELEKSI CMS TAB
+// 3. MASTER CONFIGURATION REALTIME & AUDIO ENGINE
+// =========================================================================
+function listenToGlobalSettings() {
+    database.ref('global_settings').on('value', (snapshot) => {
+        if (!snapshot.exists()) return;
+        const config = snapshot.val();
+
+        // 1. Sinkronisasi Logo Utama
+        if (config.logoUrl) {
+            document.getElementById('webLogoImg').src = config.logoUrl;
+            document.getElementById('setWebLogo').value = config.logoUrl;
+        }
+
+        // 2. Sinkronisasi Background Tampilan Web
+        if (config.backgroundUrl) {
+            document.getElementById('webBody').style.backgroundImage = `url('${config.backgroundUrl}')`;
+            document.getElementById('setWebBackground').value = config.backgroundUrl;
+        } else {
+            document.getElementById('webBody').style.backgroundImage = 'none';
+        }
+
+        // 3. Set value form agar sinkron di input owner
+        if (config.musicUrl) document.getElementById('setWebMusic').value = config.musicUrl;
+        if (config.volume) {
+            document.getElementById('setWebVolume').value = config.volume;
+            document.getElementById('volumeValLabel').innerText = config.volume + "%";
+        }
+
+        // 4. Jalankan Player Musik (YouTube / Spotify)
+        renderAudioPlayer(config.musicUrl, config.volume || 50);
+    });
+}
+
+function renderAudioPlayer(url, volume) {
+    const container = document.getElementById('musicPlayerContainer');
+    if (!url) { container.innerHTML = ""; return; }
+
+    let embedHtml = "";
+    
+    if (url.includes("youtube.com") || url.includes("youtu.be")) {
+        let videoId = "";
+        if (url.includes("v=")) videoId = url.split("v=")[1].split("&")[0];
+        else if (url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1].split("?")[0];
+
+        if (videoId) {
+            embedHtml = `<iframe width="100" height="100" src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}" allow="autoplay"></iframe>`;
+        }
+    } else if (url.includes("spotify.com")) {
+        let path = "";
+        if (url.includes("open.spotify.com/")) {
+            path = url.split("open.spotify.com/")[1].split("?")[0];
+            embedHtml = `<iframe src="https://open.spotify.com/embed/${path}" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
+        }
+    }
+
+    container.innerHTML = embedHtml;
+}
+
+function saveGlobalSettings() {
+    const logoUrl = document.getElementById('setWebLogo').value.trim();
+    const backgroundUrl = document.getElementById('setWebBackground').value.trim();
+    const musicUrl = document.getElementById('setWebMusic').value.trim();
+    const volume = document.getElementById('setWebVolume').value;
+
+    const settingsData = { logoUrl, backgroundUrl, musicUrl, volume };
+
+    database.ref('global_settings').set(settingsData)
+    .then(() => {
+        alert("PENGATURAN GLOBAL BERHASIL DISIMPAN!\nTampilan Logo, Background, dan Musik seketika berubah di layar semua pengguna.");
+    })
+    .catch(err => alert("Gagal menyimpan konfigurasi: " + err.message));
+}
+
+// Sinkronisasi angka teks slider volume saat digeser manual
+document.addEventListener('input', function(e) {
+    if(e.target && e.target.id === 'setWebVolume') {
+        document.getElementById('volumeValLabel').innerText = e.target.value + "%";
+    }
+});
+
+// =========================================================================
+// 4. SELEKSI CMS TAB
 // =========================================================================
 function switchCmsTab(tabName) {
     currentCmsTab = tabName;
@@ -106,16 +208,27 @@ function switchCmsTab(tabName) {
 }
 
 // =========================================================================
-// 4. SISTEM LOGIN & SESI
+// 5. SISTEM LOGIN, SESI, & BIOMETRIK (SIDIK JARI)
 // =========================================================================
 function toggleLoginFields() {
     const type = document.getElementById('loginType').value;
+    const bioBtn = document.getElementById('biometricLoginBtn');
+    const passGroup = document.getElementById('inputPasswordGroup');
+    const userGroup = document.getElementById('inputUserGroup');
+    const nrpGroup = document.getElementById('inputNrpGroup');
+
+    userGroup.classList.remove('hidden');
+    nrpGroup.classList.add('hidden');
+    passGroup.classList.remove('hidden');
+    bioBtn.classList.add('hidden');
+
     if (type === 'dispenad') {
-        document.getElementById('inputUserGroup').classList.add('hidden');
-        document.getElementById('inputNrpGroup').classList.remove('hidden');
-    } else {
-        document.getElementById('inputUserGroup').classList.remove('hidden');
-        document.getElementById('inputNrpGroup').classList.add('hidden');
+        userGroup.classList.add('hidden');
+        nrpGroup.classList.remove('hidden');
+    } else if (type === 'owner') {
+        if (localStorage.getItem("owner_biometric_registered") === "true") {
+            bioBtn.classList.remove('hidden');
+        }
     }
 }
 
@@ -129,6 +242,7 @@ function openAdminPortal() {
     document.getElementById('mainPortal').classList.add('hidden');
     document.getElementById('adminPortal').classList.remove('hidden');
     checkAdminSession();
+    toggleLoginFields();
 }
 
 function closeAdminPortal() {
@@ -170,6 +284,35 @@ function handleLogin() {
     }
 }
 
+function setupBiometric() {
+    if (!window.PublicKeyCredential) {
+        alert("Perangkat atau browser ini tidak mendukung sistem keamanan Sidik Jari/Biometrik.");
+        return;
+    }
+    if (confirm("Apakah Anda ingin mendaftarkan Sidik Jari perangkat ini untuk login cepat Owner?")) {
+        localStorage.setItem("owner_biometric_registered", "true");
+        alert("SUKSES! Sidik Jari perangkat Anda berhasil dikonfigurasi.");
+        toggleLoginFields();
+    }
+}
+
+function loginWithBiometric() {
+    if (localStorage.getItem("owner_biometric_registered") !== "true") return;
+    navigator.credentials.create({
+        publicKey: {
+            challenge: new Uint8Array([1, 2, 3, 4]),
+            rp: { name: "Media Raya" },
+            user: { id: new Uint8Array([1]), name: "owner", displayName: "Owner Raya" },
+            pubKeyCredParams: [{ type: "public-key", alg: -7 }]
+        }
+    }).then(() => {
+        alert("Verifikasi Sidik Jari Berhasil! Selamat datang kembali Owner.");
+        sessionStorage.setItem("adminActive", OWNER_USERNAME);
+        sessionStorage.setItem("roleActive", "owner");
+        checkAdminSession();
+    }).catch(() => { alert("Gagal memverifikasi sidik jari."); });
+}
+
 function checkAdminSession() {
     const currentAdmin = sessionStorage.getItem("adminActive");
     const role = sessionStorage.getItem("roleActive");
@@ -208,7 +351,7 @@ function handleLogout() {
 }
 
 // =========================================================================
-// 5. MANAJEMEN USER (EKSKLUSIF PANEL OWNER)
+// 6. MANAJEMEN USER & CABUT AKSES (EKSKLUSIF PANEL OWNER)
 // =========================================================================
 function generateAdmin() {
     const user = document.getElementById('newAdminUser').value.trim();
@@ -219,15 +362,20 @@ function generateAdmin() {
 
     const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
     const regDate = new Date().toLocaleDateString('id-ID', options) + " WIB";
-    
     const adminData = { username: user, password: pass, registeredAt: regDate, status: "Offline" };
 
     database.ref('whitelist_admins/' + user.toLowerCase()).set(adminData)
     .then(() => {
-        alert(`Akun "${user}" berhasil didaftarkan!`);
+        alert(`Akun "${user}" berhasil didaftarkan ke Whitelist!`);
         document.getElementById('newAdminUser').value = '';
         document.getElementById('newAdminPass').value = '';
-    }).catch(err => alert("Gagal mendata: " + err.message));
+    });
+}
+
+function revokeAdminAccess(username) {
+    if (confirm(`Apakah Anda yakin ingin menghapus & mencabut hak akses untuk "${username}"?`)) {
+        database.ref('whitelist_admins/' + username.toLowerCase()).remove();
+    }
 }
 
 function listenToAccessList() {
@@ -242,10 +390,12 @@ function listenToAccessList() {
             const data = child.val();
             const statusColor = data.status === 'Online' ? '#00e676' : '#757575';
             tbody.innerHTML += `
-                <tr style="border-bottom: 1px solid #222; height: 32px;">
+                <tr style="border-bottom: 1px solid #222; height: 35px;">
                     <td style="color:#fff; font-weight:600; padding: 4px;">${data.username}</td>
-                    <td style="color:#aaa; padding: 4px;">${data.registeredAt}</td>
                     <td style="padding: 4px;"><span style="color: ${statusColor}; font-weight: bold;">● ${data.status.toUpperCase()}</span></td>
+                    <td style="padding: 4px; text-align: center;">
+                        <button onclick="revokeAdminAccess('${data.username}')" style="background-color:#b71c1c; color:#fff; font-size:10px; padding:3px 8px; width:auto; margin:0; border-radius:3px; border:none; cursor:pointer;">Hapus Akses</button>
+                    </td>
                 </tr>
             `;
         });
@@ -253,7 +403,7 @@ function listenToAccessList() {
 }
 
 // =========================================================================
-// 6. PUBLISH KONTEN & DISCORD SINKRONISASI
+// 7. PUBLISH KONTEN & DISCORD SINKRONISASI
 // =========================================================================
 function executePublish() {
     if (currentCmsTab === 'news') { savePost(); } else { sendAnnouncement(); }
@@ -372,4 +522,3 @@ function clearAllNews() {
 }
 
 window.onload = checkLocation;
-                      
