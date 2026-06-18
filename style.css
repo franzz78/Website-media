@@ -1,5 +1,5 @@
 /* =========================================================================
-   1. CORE IDENTITY & CYBER TACTICAL GLASS
+   1. CORE THEME (CYBERPUNK TACTICAL BASE WITH LIGHT CARD THEME)
    ========================================================================= */
 :root {
     --bg-main: #06090e;                 /* Hitam Carbon pekat dasar */
@@ -10,11 +10,11 @@
     --text-muted: #94a3b8;
     --accent-red: #ff2a2a;
     
-    /* WARNA DARI CONTOH ABSENSI DIGITAL KAMU */
-    --btn-slate: #34495e;               /* Abu-abu kebiruan (Rekap/Kelola) */
-    --btn-teal: #16a085;                /* Hijau Toska/Teal (Peringkat/Siswa) */
-    --btn-orange: #a04000;              /* Merah Bata/Cokelat (Tutup/Reset Bulanan) */
-    --btn-maroon: #78281f;              /* Merah Tua/Maroon (Reset Harian) */
+    /* PALET WARNA TOMBOL SOLID (MENGADOPSI GAYA GAMBAR REFERENSI) */
+    --btn-slate: #34495e;               /* Abu-abu kebiruan */
+    --btn-teal: #16a085;                /* Hijau Toska/Teal */
+    --btn-orange: #a04000;              /* Merah Bata/Cokelat */
+    --btn-maroon: #78281f;              /* Merah Tua/Maroon */
 }
 
 * {
@@ -37,7 +37,7 @@ body {
 }
 
 /* =========================================================================
-   2. NAVBAR HEADER
+   2. NAVBAR HEADER GLASS
    ========================================================================= */
 header {
     background: rgba(6, 9, 14, 0.75);
@@ -56,7 +56,7 @@ header {
 
 .logo-main {
     font-weight: 800;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 1.5px;
     color: var(--accent-gold);
 }
@@ -134,7 +134,7 @@ header {
 }
 
 /* =========================================================================
-   3. BOX CONTROLLER (BACKGROUND STRUKTUR UTAMA)
+   3. BOX ARCHITECTURE (BINGKAI AREA UMUM)
    ========================================================================= */
 .container {
     max-width: 600px;
@@ -157,7 +157,6 @@ header {
     display: none !important;
 }
 
-/* INPUT COMPONENT */
 input[type="text"], input[type="password"], textarea, select {
     width: 100%;
     padding: 13px 16px;
@@ -180,10 +179,10 @@ label {
 }
 
 /* =========================================================================
-   4. APRESIASI DESAIN TOMBOL ABSENSI DIGITAL (MENCANGKUP PANEL UTAMA)
+   4. MODERATOR PANEL GRID (PREMIUM CAPSULE STYLE)
    ========================================================================= */
 .owner-exclusive-card {
-    background: rgba(255, 255, 255, 0.96); /* Diubah jadi putih bersih agar tombol berwarna muncul kontras seperti gambar */
+    background: rgba(255, 255, 255, 0.96); /* Latar belakang putih kontras agar tombol berwarna stand-out */
     border: none;
     border-radius: 24px;
     padding: 26px;
@@ -218,7 +217,7 @@ label {
     font-weight: 800;
 }
 
-/* STRUKTUR TATA LETAK MENU GRID BERPASANGAN (PERSIS GAMBAR) */
+/* STRUKTUR MENU GRID KAPSUL */
 .owner-grid-menu {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -226,11 +225,10 @@ label {
     margin-bottom: 16px;
 }
 
-/* KLASIFIKASI TOMBOL KAPSUL BULAT HALUS */
 .btn-owner-grid {
     width: 100%;
     padding: 16px 14px;
-    border-radius: 35px; /* Membuat bentuk kapsul oval sempurna */
+    border-radius: 35px; /* Oval Kapsul Sempurna */
     font-size: 13px;
     font-weight: 700;
     color: #ffffff;
@@ -247,43 +245,22 @@ label {
     filter: brightness(1.1);
 }
 
-/* MENYESUAIKAN WARNA BERDASARKAN CONTOH ABSENSI */
-.btn-blue { 
-    background: var(--btn-slate); 
-}
-.btn-teal { 
-    background: var(--btn-teal); 
-}
-.btn-red {
-    background: var(--btn-orange);
-}
+/* WARNA KLASIFIKASI TOMBOL */
+.btn-blue { background: var(--btn-slate); }
+.btn-teal { background: var(--btn-teal); }
+.btn-red { background: var(--btn-orange); }
+.btn-maroon { background: var(--btn-maroon); }
 
-/* ATUR BIOMETRIK (TOMBOL TENGAH LEBAR) */
-button[onclick="setupBiometric()"] {
-    grid-column: span 2; /* Membuat tombol Atur Biometrik melintang penuh di tengah */
+/* TOMBOL ENKRIPSI TENGAH (MELINTANG FULL) */
+.btn-biometric {
+    grid-column: span 2;
     background: #ffffff !important;
     color: #2c3e50 !important;
     border: 1px solid rgba(0,0,0,0.1) !important;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
 }
 
-/* SEPARASI TOMBOL LOCKDOWN (IKUTI STYLE KAPSUL) */
-button[onclick="executeLockdownOpen()"] {
-    background: var(--btn-teal) !important;
-    color: #ffffff !important;
-    border-radius: 35px !important;
-    border: none !important;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15) !important;
-}
-button[onclick="executeLockdownClose()"] {
-    background: var(--btn-orange) !important;
-    color: #ffffff !important;
-    border-radius: 35px !important;
-    border: none !important;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15) !important;
-}
-
-/* INTERIOR BOX AREA */
+/* INTERNAL AREA DARURAT */
 .sub-owner-box {
     background: #f8f9f9;
     border: 1px solid rgba(0,0,0,0.06);
@@ -313,7 +290,7 @@ button[onclick="executeLockdownClose()"] {
 }
 
 /* =========================================================================
-   5. BINGKAI STRUKTUR JABATAN TNI
+   5. BINGKAI FOTO STRUKTUR JABATAN MILITER
    ========================================================================= */
 .tni-structure-container {
     display: flex;
@@ -372,7 +349,7 @@ button[onclick="executeLockdownClose()"] {
 }
 
 /* =========================================================================
-   6. LOCKDOWN SCREEN
+   6. LOCKDOWN PANEL SCREEN OVERLAY
    ========================================================================= */
 #maintenanceBlocker {
     position: fixed;
@@ -417,7 +394,7 @@ button[onclick="executeLockdownClose()"] {
 }
 
 /* =========================================================================
-   7. MISC EFFECT & FOOTER
+   7. MISC TEXT EFFECTS & FOOTER
    ========================================================================= */
 .verified-badge {
     background: #0095f6;
@@ -461,4 +438,4 @@ footer strong {
 @keyframes moveGrad {
     0% { background-position: 0% center; }
     100% { background-position: 200% center; }
-                           }
+}
