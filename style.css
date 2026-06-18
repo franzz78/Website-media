@@ -1,31 +1,33 @@
 /* =========================================================================
-   CORE CONFIGURATION & BASE THEME (DARK MILITARY CYBERPUNK)
+   CORE CONFIGURATION & THEME (MODERN TECH TACTICAL GREEN-GOLD-BLACK)
    ========================================================================= */
 :root {
-    --bg-main: #0b0f19;
-    --bg-card: rgba(17, 24, 39, 0.7);
-    --border-glow: rgba(102, 252, 241, 0.15);
-    --primary-neon: #66fcf1;
-    --primary-dim: #45a29e;
-    --text-white: #f8fafc;
+    --bg-main: #06080c;                 /* Hitam Carbon pekat premium */
+    --bg-card: rgba(13, 19, 23, 0.75);   /* Kaca transparan gelap */
+    --primary-green: #00ff66;           /* Hijau Emerald/Army Neon */
+    --primary-dim: #00a844;
+    --accent-gold: #ffd700;             /* Kuning Emas/Gold Taktis Militer */
+    --accent-gold-glow: rgba(255, 215, 0, 0.2);
+    --border-glow: rgba(0, 255, 102, 0.15);
+    --text-white: #ffffff;
     --text-muted: #94a3b8;
-    --accent-red: #ef4444;
-    --accent-green: #10b981;
+    --accent-red: #ff2a2a;
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
     -webkit-tap-highlight-color: transparent;
 }
 
 body {
     background-color: var(--bg-main);
     background-image: 
-        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.05) 0px, transparent 50%);
+        radial-gradient(at 0% 0%, rgba(0, 255, 102, 0.08) 0px, transparent 40%),
+        radial-gradient(at 100% 0%, rgba(255, 215, 0, 0.05) 0px, transparent 40%),
+        radial-gradient(at 50% 100%, rgba(6, 8, 12, 0.8) 0px, var(--bg-main) 100%);
     background-attachment: fixed;
     color: var(--text-white);
     overflow-x: hidden;
@@ -33,13 +35,15 @@ body {
 }
 
 /* =========================================================================
-   HEADER & NAVBAR OVERLAY (☰)
+   HEADER UTAMA & GLOWING EFFECT
    ========================================================================= */
 header {
-    background: rgba(11, 15, 25, 0.8);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 15px 20px;
+    background: rgba(6, 8, 12, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 2px solid rgba(0, 255, 102, 0.2);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+    padding: 16px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -50,52 +54,62 @@ header {
 
 .logo-main {
     font-weight: 800;
-    font-size: 14px;
-    letter-spacing: 1px;
-    color: var(--text-white);
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    color: var(--accent-gold);
+    text-shadow: 0 0 8px var(--accent-gold-glow);
 }
 
 .logo-sub {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 900;
     color: var(--text-white);
+    letter-spacing: 0.5px;
 }
 
 .logo-sub span {
-    color: var(--primary-neon);
+    color: var(--primary-green);
+    text-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
 }
 
 .logo-managed {
     font-size: 10px;
-    color: var(--text-muted);
+    color: var(--primary-green);
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
+    opacity: 0.8;
 }
 
 .menu-toggle {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--primary-neon);
+    background: rgba(0, 255, 102, 0.06);
+    border: 1.5px solid var(--primary-green);
+    color: var(--primary-green);
     font-size: 24px;
-    padding: 6px 14px;
-    border-radius: 8px;
+    padding: 6px 16px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    box-shadow: 0 0 12px rgba(0, 255, 102, 0.15);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .menu-toggle:hover {
-    background: rgba(102, 252, 241, 0.1);
-    border-color: var(--primary-neon);
+    background: var(--primary-green);
+    color: #000;
+    box-shadow: 0 0 20px rgba(0, 255, 102, 0.4);
+    transform: scale(1.05);
 }
 
+/* NAVIGATION OVERLAY */
 .nav-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(7, 10, 18, 0.95);
-    backdrop-filter: blur(20px);
+    background: rgba(4, 6, 9, 0.98);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
     display: none;
     flex-direction: column;
     justify-content: center;
@@ -109,47 +123,51 @@ header {
 }
 
 .nav-links li {
-    margin: 20px 0;
+    margin: 22px 0;
 }
 
 .nav-links a {
     color: var(--text-white);
     text-decoration: none;
-    font-size: 20px;
-    font-weight: 700;
-    transition: color 0.2s;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    transition: all 0.2s;
 }
 
 .nav-links a:hover {
-    color: var(--primary-neon);
+    color: var(--accent-gold);
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
 }
 
 .close-menu {
     position: absolute;
     top: 20px;
-    right: 20px;
+    right: 25px;
     background: none;
     border: none;
-    color: var(--text-white);
-    font-size: 35px;
+    color: var(--accent-red);
+    font-size: 38px;
     cursor: pointer;
 }
 
 /* =========================================================================
-   CONTAINER & LAYOUT STANDAR
+   CONTAINER GRID & STANDAR INPUT (GLASSMORPHISM)
    ========================================================================= */
 .container {
-    max-width: 600px;
-    margin: 25px auto;
+    max-width: 620px;
+    margin: 20px auto;
     padding: 0 15px;
 }
 
 .box {
     background: var(--bg-card);
-    border: 1px solid var(--border-glow);
-    border-radius: 16px;
-    padding: 20px;
-    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 255, 102, 0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border-radius: 18px;
+    padding: 24px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     margin-bottom: 20px;
 }
 
@@ -157,13 +175,12 @@ header {
     display: none !important;
 }
 
-/* INPUT FORM STANDAR */
 input[type="text"], input[type="password"], textarea, select {
     width: 100%;
-    padding: 12px 16px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
+    padding: 14px 18px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
     color: #fff;
     font-size: 14px;
     margin-bottom: 15px;
@@ -172,149 +189,161 @@ input[type="text"], input[type="password"], textarea, select {
 
 input:focus, textarea:focus, select:focus {
     outline: none;
-    border-color: var(--primary-neon);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.15);
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.25);
 }
 
 label {
     display: block;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text-muted);
-    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--accent-gold);
+    margin-bottom: 8px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
 }
 
 /* =========================================================================
-   EXCLUSIVE PREMIUM OWNER CARD (DESAIN GRID SIMETRIS)
+   OWNER CONTROL MATRIX (TACTICAL COMPACT HUB)
    ========================================================================= */
 .owner-exclusive-card {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(9, 13, 22, 0.95));
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: 20px;
-    padding: 24px;
+    background: linear-gradient(145deg, rgba(14, 22, 18, 0.9), rgba(6, 8, 12, 0.98));
+    border: 2px solid var(--accent-gold);
+    border-radius: 22px;
+    padding: 26px;
     margin-bottom: 25px;
-    backdrop-filter: blur(20px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.7), inset 0 1px 2px rgba(255,255,255,0.05);
 }
 
 .owner-status-title {
     font-size: 11px;
-    color: var(--accent-red);
-    font-weight: 800;
+    color: var(--accent-gold);
+    font-weight: 900;
     text-align: center;
-    letter-spacing: 1px;
+    letter-spacing: 1.2px;
     margin-bottom: 20px;
-    text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .rainbow-switch-box {
-    background: rgba(0, 0, 0, 0.4);
-    padding: 14px;
-    border-radius: 12px;
-    border: 1px solid rgba(102, 252, 241, 0.1);
+    background: rgba(0, 0, 0, 0.6);
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(0, 255, 102, 0.2);
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 22px;
 }
 
 .rainbow-switch-box label {
     margin-bottom: 0;
-    color: var(--text-white);
-    font-size: 12px;
-    font-weight: 700;
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 800;
     cursor: pointer;
 }
 
-/* SISTEM GRID TOMBOL MENU UTAMA OWNER */
+/* MENU GRID SIMETRIS JABATAN (ABSENSI LOGIC STYLE) */
 .owner-grid-menu {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-bottom: 15px;
+    gap: 14px;
+    margin-bottom: 20px;
 }
 
 .btn-owner-grid {
     width: 100%;
-    padding: 16px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    padding: 18px 12px;
     border-radius: 14px;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 800;
     color: #ffffff;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .btn-owner-grid:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    filter: brightness(1.2);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.5);
+    filter: brightness(1.25);
 }
 
-/* PALET WARNA TOMBOL */
-.btn-blue { background: linear-gradient(135deg, #1e293b, #334155); border-color: rgba(255,255,255,0.05); }
-.btn-teal { background: linear-gradient(135deg, #064e3b, #0f766e); }
-.btn-orange { background: linear-gradient(135deg, #7c2d12, #9a3412); }
-.btn-red { background: linear-gradient(135deg, #7f1d1d, #991b1b); }
+/* PALET TACTICAL GRID */
+.btn-blue { background: linear-gradient(135deg, #111827, #1f2937); border-left: 4px solid var(--primary-green); }
+.btn-teal { background: linear-gradient(135deg, #022c22, #064e3b); border-left: 4px solid var(--accent-gold); }
 
-/* SUB CONTAINER ACTION INSIDE OWNER AREA */
+/* INDEPENDENT LOCKDOWN SYSTEM SEPARATED BUTTONS */
+.execute-btn-open, .execute-btn-close {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Hijau & Hitam Kompak */
+execute-btn-open, button[onclick="executeLockdownOpen()"] {
+    background: linear-gradient(135deg, #008f37, #00ff66) !important;
+    color: #000000 !important;
+}
+execute-btn-close, button[onclick="executeLockdownClose()"] {
+    background: linear-gradient(135deg, #990000, #ff2a2a) !important;
+    color: #ffffff !important;
+}
+
+/* SUB SECTION DRAWER */
 .sub-owner-box {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 18px;
-    border-radius: 14px;
+    background: rgba(4, 6, 9, 0.7);
+    border: 1px solid rgba(0, 255, 102, 0.2);
+    padding: 20px;
+    border-radius: 16px;
     margin-top: 15px;
 }
 
 .sub-owner-title {
     font-size: 11px;
-    font-weight: 800;
-    color: var(--primary-neon);
+    font-weight: 900;
+    color: var(--accent-gold);
     display: block;
-    margin-bottom: 12px;
-    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+    letter-spacing: 0.8px;
 }
 
 .btn-action-save {
-    background: var(--primary-neon);
+    background: var(--primary-green);
     color: #000;
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     border: none;
-    border-radius: 10px;
-    font-weight: 700;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 13px;
     cursor: pointer;
-}
-
-.btn-action-danger {
-    background: var(--accent-red);
-    color: #fff;
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    font-weight: 700;
-    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 255, 102, 0.2);
 }
 
 /* =========================================================================
-   PREMIUM LAYOUT STRUKTUR JABATAN ANGGOTA TNI
+   STRUKTUR JABATAN ANGGOTA TNI DESIGN
    ========================================================================= */
 .tni-structure-container {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 22px;
     margin-top: 10px;
 }
 
 .tni-row-flex {
     display: flex;
     justify-content: space-between;
-    gap: 12px;
+    gap: 14px;
 }
 
 .tni-card {
@@ -322,27 +351,34 @@ label {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 16px 10px;
-    border-radius: 14px;
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.02);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(0, 255, 102, 0.15);
+    padding: 18px 12px;
+    border-radius: 16px;
+    transition: all 0.2s ease;
+}
+
+.tni-card:hover {
+    border-color: var(--accent-gold);
+    background: rgba(0, 255, 102, 0.03);
+    transform: translateY(-2px);
 }
 
 .tni-photo-frame {
-    width: 90px;
-    height: 115px;
-    background: #090d16;
+    width: 95px;
+    height: 120px;
+    background: #000;
     border: 2px solid var(--primary-dim);
-    border-radius: 10px;
+    border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-    transition: border-color 0.2s;
+    margin-bottom: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    transition: all 0.2s;
 }
 
 .tni-card:hover .tni-photo-frame {
-    border-color: var(--primary-neon);
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
 }
 
 .tni-photo-frame img {
@@ -353,24 +389,24 @@ label {
 
 .tni-role {
     font-size: 11px;
-    font-weight: 800;
-    color: var(--primary-neon);
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
+    font-weight: 900;
+    color: var(--accent-gold);
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
     text-transform: uppercase;
     text-align: center;
 }
 
 .tni-name {
     font-size: 11px;
-    color: var(--text-muted);
-    font-weight: 600;
+    color: var(--text-white);
+    font-weight: 700;
     text-align: center;
-    word-break: break-word;
+    opacity: 0.9;
 }
 
 /* =========================================================================
-   LOCKDOWN darurat SCREEN SYSTEM
+   SCREEN BLOCKER UNTUK LOCKDOWN (TEKS DISCORD SESUAI PERMINTAAN)
    ========================================================================= */
 #maintenanceBlocker {
     position: fixed;
@@ -378,7 +414,7 @@ label {
     left: 0;
     width: 100%;
     height: 100%;
-    background: #070a12;
+    background: #040609;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -387,98 +423,96 @@ label {
 }
 
 .maintenance-box {
-    max-width: 450px;
+    max-width: 460px;
     text-align: center;
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    padding: 40px 30px;
-    border-radius: 24px;
-    backdrop-filter: blur(20px);
-    box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+    background: rgba(13, 19, 23, 0.9);
+    border: 2px solid var(--accent-red);
+    padding: 45px 30px;
+    border-radius: 28px;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.8);
 }
 
 .maintenance-icon {
-    font-size: 50px;
+    font-size: 55px;
     margin-bottom: 15px;
-    animation: pulse 1.5s infinite alternate;
+    animation: glowPulse 1.5s infinite alternate;
 }
 
 .lockdown-title {
-    font-size: 34px;
+    font-size: 36px;
     font-weight: 900;
     color: var(--accent-red);
-    letter-spacing: 3px;
-    margin-bottom: 10px;
-    text-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+    text-shadow: 0 0 20px rgba(255, 42, 42, 0.4);
 }
 
 .lockdown-subtitle {
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 800;
     color: #ffffff;
     letter-spacing: 1px;
-    background: rgba(239, 68, 68, 0.12);
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: 1px solid rgba(239, 68, 68, 0.25);
+    background: rgba(255, 42, 42, 0.15);
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 42, 42, 0.3);
     display: inline-block;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 /* =========================================================================
-   USER VERIFIED BADGE & SPECIAL EFFECT
+   VERIFIED BADGE, RAINBOW AND FOOTER
    ========================================================================= */
 .verified-badge {
     background: #0095f6;
     color: #ffffff;
     font-size: 9px;
-    font-weight: 800;
-    padding: 2px 6px;
-    border-radius: 4px;
+    font-weight: 900;
+    padding: 3px 6px;
+    border-radius: 5px;
     margin-left: 6px;
     display: inline-flex;
     align-items: center;
     text-transform: uppercase;
+    box-shadow: 0 0 8px rgba(0, 149, 246, 0.4);
 }
 
 .rainbow-text {
-    background: linear-gradient(to right, #ef4444, #f59e0b, #10b981, #3b82f6, #8b5cf6, #ef4444);
+    background: linear-gradient(to right, #00ff66, #ffd700, #ff2a2a, #00ff66);
     background-size: 200% auto;
     color: transparent;
     -webkit-background-clip: text;
     background-clip: text;
-    animation: gradientMove 3s linear infinite;
-    font-weight: 800;
+    animation: runGradient 3s linear infinite;
+    font-weight: 900;
 }
 
-/* =========================================================================
-   FOOTER SECTION
-   ========================================================================= */
 footer {
     text-align: center;
-    padding: 30px 15px;
+    padding: 35px 15px;
     color: var(--text-muted);
     font-size: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.03);
-    margin-top: 50px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    margin-top: 60px;
 }
 
 footer strong {
-    color: var(--text-white);
+    color: var(--accent-gold);
 }
 
 .owner-tag {
-    color: var(--primary-neon);
-    font-weight: 700;
+    color: var(--primary-green);
+    font-weight: 800;
+    text-shadow: 0 0 8px rgba(0, 255, 102, 0.2);
 }
 
-/* ANIMASI STANDAR */
-@keyframes gradientMove {
+/* CORE INTERACTIVE KEYAFRAMES */
+@keyframes runGradient {
     0% { background-position: 0% center; }
     100% { background-position: 200% center; }
 }
 
-@keyframes pulse {
-    from { transform: scale(1); opacity: 0.9; }
-    to { transform: scale(1.05); opacity: 1; }
-   }
+@keyframes glowPulse {
+    from { transform: scale(1); filter: drop-shadow(0 0 5px rgba(255,42,42,0.4)); }
+    to { transform: scale(1.06); filter: drop-shadow(0 0 20px rgba(255,42,42,0.8)); }
+       }
